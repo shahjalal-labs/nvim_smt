@@ -269,7 +269,7 @@ vim.keymap.set("n", "<leader>nh", openSiblingHurl, { desc = "Open sibling .hurl 
 --
 -- w: ╭──────────── Block Start ────────────╮
 -- Function to open sibling controller file in same directory
-local function openSiblingController()
+--[[ local function openSiblingController()
 	local current_file = vim.fn.expand("%:p") -- full path of current file
 	local current_dir = vim.fn.fnamemodify(current_file, ":h") -- directory of current file
 
@@ -286,8 +286,302 @@ end
 
 -- Map it to <leader>nk k for controller
 vim.keymap.set("n", "<leader>nk", openSiblingController, { desc = "Open sibling controller file" })
-
+ ]]
 -- w: ╰───────────── Block End ─────────────╯
+
+-- w: ╭──────────── Smart Sibling Controller Navigator v2 ────────────╮
+-- Place this in your Neovim lua config. Maps to <leader>nk.
+-- local api = vim.api
+-- local fn = vim.fn
+--
+-- -- Levenshtein distance for fuzzy matching (small, fast)
+-- local function levenshtein(s, t)
+-- 	if s == t then
+-- 		return 0
+-- 	end
+-- 	local m, n = #s, #t
+-- 	if m == 0 then
+-- 		return n
+-- 	end
+-- 	if n == 0 then
+-- 		return m
+-- 	end
+-- 	local d = {}
+-- 	for i = 0, m do
+-- 		d[i] = {}
+-- 		d[i][0] = i
+-- 	end
+-- 	for j = 0, n do
+-- 		d[0][j] = j
+-- 	end
+-- 	for i = 1, m do
+-- 		local si = s:sub(i, i)
+-- 		for j = 1, n do
+-- 			local cost = (si == t:sub(j, j)) and 0 or 1
+-- 			d[i][j] = math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
+-- 		end
+-- 	end
+-- 	return d[m][n]
+-- end
+--
+-- -- Normalize names for comparison
+-- local function normalize(name)
+-- 	if not name then
+-- 		return ""
+-- 	end
+-- 	local out = name:lower()
+-- 	out = out:gsub("fromdb", ""):gsub("handler", ""):gsub("controller", "")
+-- 	out = out:gsub("_", ""):gsub("%W", "") -- remove punctuation
+-- 	return out
+-- end
+--
+-- -- Read file contents (returns list of lines)
+-- local function read_file_lines(path)
+-- 	local ok, lines = pcall(fn.readfile, path)
+-- 	if ok then
+-- 		return lines
+-- 	else
+-- 		return {}
+-- 	end
+-- end
+--
+-- -- Collect candidate symbol names from a file using several patterns:
+-- --  - your block markers: --w: .*NAME.*
+-- --  - export const NAME = ...
+-- --  - const NAME[:<type>] = ...
+-- --  - function NAME(
+-- --  - NAME = async
+-- --  - NAME: RequestHandler =
+-- local function collect_symbols_from_file(path)
+-- 	local lines = read_file_lines(path)
+-- 	local symbols = {}
+-- 	for i, line in ipairs(lines) do
+-- 		-- block marker (supports your various `--w:` formats)
+-- 		local bm = line:match("%-%-w[:%s%w%p]*([%w_]+)%s*%p*$")
+-- 		if bm then
+-- 			symbols[#symbols + 1] = { name = bm, line = i, kind = "block" }
+-- 		end
+--
+-- 		local patterns = {
+-- 			"export%s+const%s+([%w_]+)",
+-- 			"const%s+([%w_]+)%s*[:=]",
+-- 			"function%s+([%w_]+)%s*%(",
+-- 			"([%w_]+)%s*=%s*async",
+-- 			"([%w_]+)%s*:%s*RequestHandler%s*=",
+-- 			"([%w_]+)%s*:%s*any%s*=",
+-- 			"([%w_]+)%.%w+%s*=%s*",
+-- 		}
+--
+-- 		for _, pat in ipairs(patterns) do
+-- 			local name = line:match(pat)
+-- 			if name then
+-- 				symbols[#symbols + 1] = { name = name, line = i, kind = "symbol" }
+-- 			end
+-- 		end
+-- 	end
+--
+-- 	-- dedupe by name keeping first occurrence
+-- 	local seen = {}
+-- 	local uniq = {}
+-- 	for _, s in ipairs(symbols) do
+-- 		if s.name and not seen[s.name] then
+-- 			seen[s.name] = true
+-- 			uniq[#uniq + 1] = s
+-- 		end
+-- 	end
+-- 	return uniq
+-- end
+--
+-- -- Extract a probable symbol under/near cursor depending on file type:
+-- -- tries several heuristics scanning nearby lines
+-- local function extract_symbol_from_buffer()
+-- 	local bufnr = api.nvim_get_current_buf()
+-- 	local lnum = api.nvim_win_get_cursor(0)[1]
+-- 	local start_line = math.max(1, lnum - 12)
+-- 	local end_line = lnum + 12
+-- 	local lines = api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
+--
+-- 	-- helper tries: search for patterns in given line, return first match
+-- 	local function try_patterns(s)
+-- 		if not s then
+-- 			return nil
+-- 		end
+-- 		-- block marker
+-- 		local bm = s:match("%-%-w[:%s%w%p]*([%w_]+)%s*%p*$")
+-- 		if bm then
+-- 			return bm
+-- 		end
+-- 		-- typical JS/TS definitions
+-- 		local pats = {
+-- 			"UserController%.([%w_]+)", -- routes like UserController.getMyProfile
+-- 			"([%w_]+)%s*:%s*RequestHandler",
+-- 			"export%s+const%s+([%w_]+)",
+-- 			"const%s+([%w_]+)%s*[:=]",
+-- 			"function%s+([%w_]+)%s*%(",
+-- 			"([%w_]+)%s*=%s*catchAsync",
+-- 			"([%w_]+)%s*=%s*async",
+-- 			"router%.%w+%s*%(%s*['\"]", -- route declaration: we'll try to find handler after comma
+-- 		}
+-- 		for _, p in ipairs(pats) do
+-- 			local m = s:match(p)
+-- 			if m then
+-- 				return m
+-- 			end
+-- 		end
+-- 		return nil
+-- 	end
+--
+-- 	-- 1. try current line first
+-- 	local curline = api.nvim_get_current_line()
+-- 	local sym = try_patterns(curline)
+-- 	if sym then
+-- 		return sym
+-- 	end
+--
+-- 	-- 2. scan nearby lines for patterns
+-- 	for i = 1, #lines do
+-- 		local m = try_patterns(lines[i])
+-- 		if m then
+-- 			return m
+-- 		end
+-- 	end
+--
+-- 	return nil
+-- end
+--
+-- -- Determine target file type for controller navigation
+-- local function pick_target_for_current(file_path)
+-- 	local lower = file_path:lower()
+-- 	if lower:match("controller") then
+-- 		return "service"
+-- 	elseif lower:match("service") then
+-- 		return "controller"
+-- 	elseif lower:match("route") or lower:match("routes") then
+-- 		return "controller"
+-- 	elseif lower:match("validation") then
+-- 		return "controller" -- validations often map to controller
+-- 	else
+-- 		-- fallback: prefer controller
+-- 		return "controller"
+-- 	end
+-- end
+--
+-- -- Find sibling files in same dir matching a role keyword (controller/service)
+-- local function find_sibling_files(dir, role_keyword)
+-- 	local pat = dir .. "/*" .. role_keyword .. "*.{ts,js}"
+-- 	local files = fn.glob(pat, false, true)
+-- 	return files
+-- end
+--
+-- -- Jump to best symbol in file (open then go)
+-- local function open_file_and_jump(path, target_symbol)
+-- 	if not path or path == "" then
+-- 		vim.notify("No target file to open", vim.log.levels.WARN)
+-- 		return
+-- 	end
+--
+-- 	-- open file in current window
+-- 	vim.cmd("edit " .. fn.fnameescape(path))
+--
+-- 	if not target_symbol or target_symbol == "" then
+-- 		return
+-- 	end
+--
+-- 	-- prefer block marker search first
+-- 	local ok = vim.fn.search("--w:.*" .. target_symbol, "w")
+-- 	if ok and ok > 0 then
+-- 		return
+-- 	end
+--
+-- 	-- then search for exact symbol
+-- 	ok = vim.fn.search("\\V" .. target_symbol, "w")
+-- 	if ok and ok > 0 then
+-- 		return
+-- 	end
+--
+-- 	-- try normalized fuzzy search by scanning file lines
+-- 	local lines = read_file_lines(path)
+-- 	local normalized_target = normalize(target_symbol)
+-- 	local best = { score = 1e9, line = nil, name = nil }
+-- 	for i, l in ipairs(lines) do
+-- 		local word = l:match("([%w_]+)")
+-- 		if word then
+-- 			local sc = levenshtein(normalize(word), normalized_target)
+-- 			if sc < best.score then
+-- 				best = { score = sc, line = i, name = word }
+-- 			end
+-- 		end
+-- 	end
+-- 	if best.line then
+-- 		vim.fn.cursor(best.line, 1)
+-- 		vim.notify("Fuzzy jumped to '" .. (best.name or "?") .. "' (score " .. best.score .. ")", vim.log.levels.INFO)
+-- 	else
+-- 		vim.notify("Opened file but didn't find symbol: " .. target_symbol, vim.log.levels.WARN)
+-- 	end
+-- end
+--
+-- -- Main action for <leader>nk
+-- local function openSiblingController()
+-- 	local current_file = fn.expand("%:p")
+-- 	if current_file == "" then
+-- 		vim.notify("No file", vim.log.levels.WARN)
+-- 		return
+-- 	end
+-- 	local current_dir = fn.fnamemodify(current_file, ":h")
+-- 	local target_role = pick_target_for_current(current_file) -- 'controller' or 'service' etc.
+-- 	local sibling_files = find_sibling_files(current_dir, target_role)
+--
+-- 	if #sibling_files == 0 then
+-- 		vim.notify("No sibling " .. target_role .. " file found in " .. current_dir, vim.log.levels.WARN)
+-- 		return
+-- 	end
+--
+-- 	-- Best-effort symbol extraction from current buffer
+-- 	local symbol = extract_symbol_from_buffer()
+-- 	if not symbol then
+-- 		-- as a fallback, try deriving from filename: e.g. user.service -> get a base like 'user'
+-- 		symbol = fn.fnamemodify(current_file, ":t:r")
+-- 	end
+--
+-- 	-- Gather all candidates across sibling files
+-- 	local best_choice = { file = sibling_files[1], name = nil, score = 1e9 }
+-- 	for _, f in ipairs(sibling_files) do
+-- 		local candidates = collect_symbols_from_file(f)
+-- 		-- if exact match present, pick immediately
+-- 		for _, c in ipairs(candidates) do
+-- 			if c.name and c.name == symbol then
+-- 				best_choice = { file = f, name = c.name, score = -1 }
+-- 				break
+-- 			end
+-- 		end
+-- 		if best_choice.score == -1 then
+-- 			break
+-- 		end
+--
+-- 		-- otherwise fuzzy compare all
+-- 		for _, c in ipairs(candidates) do
+-- 			if c.name then
+-- 				local sc = levenshtein(normalize(c.name), normalize(symbol))
+-- 				if sc < best_choice.score then
+-- 					best_choice = { file = f, name = c.name, score = sc }
+-- 				end
+-- 			end
+-- 		end
+-- 	end
+--
+-- 	-- If nothing collected, just open first sibling file
+-- 	if not best_choice or not best_choice.file then
+-- 		open_file_and_jump(sibling_files[1], symbol)
+-- 		return
+-- 	end
+--
+-- 	-- Open chosen file and jump
+-- 	open_file_and_jump(best_choice.file, best_choice.name or symbol)
+-- end
+--
+-- -- Map it to <leader>nk
+-- vim.keymap.set("n", "<leader>nk", openSiblingController, { desc = "Smart jump to sibling controller" })
+-- w: ╰──────────── Smart Sibling Controller Navigator v2 ────────────╯
 
 -- w: ╭──────────── Block Start ────────────╮
 -- Function to open sibling validation file in same directory
@@ -313,7 +607,7 @@ vim.keymap.set("n", "<leader>nv", openSiblingValidation, { desc = "Open sibling 
 
 -- w: ╭──────────── Block Start ────────────╮
 -- Function to open sibling service/logic file in same directory
-local function openSiblingService()
+--[[ local function openSiblingService()
 	local current_file = vim.fn.expand("%:p") -- full path of current file
 	local current_dir = vim.fn.fnamemodify(current_file, ":h") -- directory of current file
 
@@ -329,13 +623,13 @@ local function openSiblingService()
 end
 
 -- Map it to <leader>nl l for logic
-vim.keymap.set("n", "<leader>nl", openSiblingService, { desc = "Open sibling service file" })
+vim.keymap.set("n", "<leader>nl", openSiblingService, { desc = "Open sibling service file" }) ]]
 
 -- w: ╰───────────── Block End ─────────────╯
 
 -- w: ╭──────────── Block Start ────────────╮
 -- Function to open sibling route/gateway file in same directory
-local function openSiblingRoute()
+--[[ local function openSiblingRoute()
 	local current_file = vim.fn.expand("%:p") -- full path of current file
 	local current_dir = vim.fn.fnamemodify(current_file, ":h") -- directory of current file
 
@@ -348,10 +642,10 @@ local function openSiblingRoute()
 	else
 		vim.notify("No route file found in " .. current_dir, vim.log.levels.WARN)
 	end
-end
+end ]]
 
 -- Map it to <leader>ng
-vim.keymap.set("n", "<leader>ng", openSiblingRoute, { desc = "Open sibling route file" })
+-- vim.keymap.set("n", "<leader>ng", openSiblingRoute, { desc = "Open sibling route file" })
 
 -- w: ╰───────────── Block End ─────────────╯
 

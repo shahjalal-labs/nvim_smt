@@ -1,5 +1,6 @@
 return {
 	"supermaven-inc/supermaven-nvim",
+	enble = false,
 	config = function()
 		require("supermaven-nvim").setup({
 			keymaps = {
@@ -22,3 +23,5 @@ return {
 		})
 	end,
 }
+
+-- update for toggling enable/disable with leader tab

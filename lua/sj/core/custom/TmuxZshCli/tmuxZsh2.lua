@@ -1,6 +1,6 @@
--- ╭──────────── Block Start ────────────╮
+--p: ╭──────────── Block Start ────────────╮
 
--- ╰───────────── Block End ─────────────╯
+--p: ╰───────────── Block End ─────────────╯
 
 local keymap = vim.keymap
 
@@ -66,15 +66,6 @@ end
 --p: ╰───────────── Block End ─────────────╯
 --
 
--- update another time
-
---
---
---
---
---
---
-
 --p: ╭──────────── Block Start ────────────╮
 --w: yank the current projects root path
 vim.keymap.set("n", "<leader>cr", function()
@@ -115,4 +106,32 @@ end
 
 -- Use `vim.keymap.set` which works better with Lua functions
 vim.keymap.set("n", "<leader>rr", run_clipboard_command, { noremap = true, silent = true })
+--p: ╰───────────── Block End ─────────────╯
+
+--p: ╭──────────── Block Start ────────────╮
+-- command from zsh history
+-- ~/.config/nvim/lua/custom/zsh_history.lua
+-- Function: Open Zsh command history with fzf-lua and run selected command
+local function OpenZshHistoryPicker()
+	local history_file = vim.fn.expand("~/.zsh_history")
+	local history = vim.fn.readfile(history_file)
+
+	if #history == 0 then
+		print("No command history found.")
+		return
+	end
+
+	require("fzf-lua").fzf_exec(history, {
+		prompt = "Select Zsh command: ",
+		actions = {
+			["default"] = function(selected)
+				vim.fn.system(selected[1])
+				print("Running: " .. selected[1])
+			end,
+		},
+	})
+end
+
+-- Keybinding: <leader>ty to trigger Zsh history picker
+vim.keymap.set("n", "<leader>ty", OpenZshHistoryPicker, { desc = "FZF Zsh History Runner" })
 --p: ╰───────────── Block End ─────────────╯

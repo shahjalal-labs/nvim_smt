@@ -1,7 +1,7 @@
 local M = {}
 
 -- Base directory for saving word files
-local base_path = "/run/media/sj/developer/knowledge/english/words/wordExplainPrompts/"
+local base_path = "/home/sj/knowledge/english/words/wordExplainPrompts/"
 
 function M.create_word_file()
 	-- Ensure directory exists

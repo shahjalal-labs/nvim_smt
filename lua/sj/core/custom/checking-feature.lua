@@ -227,29 +227,3 @@ vim.api.nvim_set_keymap("v", "<A-A>", ":RunAltCommand<CR>", { noremap = true, si
 -- Function to run the current line or selected text in a Tmux pane
 
 vim.api.nvim_set_keymap("n", "t", "@r", { noremap = true, silent = false })
-
--- command from zsh history
--- ~/.config/nvim/lua/custom/zsh_history.lua
--- Function: Open Zsh command history with fzf-lua and run selected command
-local function OpenZshHistoryPicker()
-	local history_file = vim.fn.expand("~/.zsh_history")
-	local history = vim.fn.readfile(history_file)
-
-	if #history == 0 then
-		print("No command history found.")
-		return
-	end
-
-	require("fzf-lua").fzf_exec(history, {
-		prompt = "Select Zsh command: ",
-		actions = {
-			["default"] = function(selected)
-				vim.fn.system(selected[1])
-				print("Running: " .. selected[1])
-			end,
-		},
-	})
-end
-
--- Keybinding: <leader>ty to trigger Zsh history picker
-vim.keymap.set("n", "<leader>ty", OpenZshHistoryPicker, { desc = "FZF Zsh History Runner" })
