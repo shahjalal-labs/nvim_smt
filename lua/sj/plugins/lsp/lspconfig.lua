@@ -1,5 +1,5 @@
 -- for solving the deprecated warning
-return {
+--[[ return {
 	"neovim/nvim-lspconfig",
 	event = { "BufReadPre", "BufNewFile" },
 	dependencies = {
@@ -125,6 +125,64 @@ return {
 							completion = {
 								callSnippet = "Replace",
 							},
+						},
+					},
+				})
+			end,
+		})
+	end,
+} ]]
+
+-- Fix deprecated warning: lspconfigs can be used for custom server overrides, but require('lspconfig') is still needed
+return {
+	"neovim/nvim-lspconfig",
+	event = { "BufReadPre", "BufNewFile" },
+	dependencies = {
+		"hrsh7th/cmp-nvim-lsp",
+		{ "antosha417/nvim-lsp-file-operations", config = true },
+		{ "folke/neodev.nvim", opts = {} },
+	},
+	config = function()
+		local lspconfig = require("lspconfig") -- required for all servers
+		local mason_lspconfig = require("mason-lspconfig")
+		local cmp_nvim_lsp = require("cmp_nvim_lsp")
+		local keymap = vim.keymap
+
+		vim.diagnostic.config({
+			signs = {
+				text = {
+					[vim.diagnostic.severity.ERROR] = " ",
+					[vim.diagnostic.severity.WARN] = " ",
+					[vim.diagnostic.severity.HINT] = "󰠠 ",
+					[vim.diagnostic.severity.INFO] = " ",
+				},
+			},
+		})
+
+		vim.api.nvim_create_autocmd("LspAttach", {
+			group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+			callback = function(ev)
+				local opts = { buffer = ev.buf, silent = true }
+				-- keymaps omitted for brevity, keep yours here
+			end,
+		})
+
+		local capabilities = cmp_nvim_lsp.default_capabilities()
+
+		mason_lspconfig.setup_handlers({
+			function(server_name)
+				-- Use require('lspconfig') for all servers
+				lspconfig[server_name].setup({ capabilities = capabilities })
+			end,
+			["lua_ls"] = function()
+				-- Use vim.lsp.configs only for custom Lua settings
+				vim.lsp.configs.lua_ls = vim.lsp.configs.lua_ls or {}
+				lspconfig["lua_ls"].setup({
+					capabilities = capabilities,
+					settings = {
+						Lua = {
+							diagnostics = { globals = { "vim" } },
+							completion = { callSnippet = "Replace" },
 						},
 					},
 				})
