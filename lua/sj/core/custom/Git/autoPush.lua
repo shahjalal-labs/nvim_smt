@@ -599,6 +599,7 @@ vim.api.nvim_create_user_command("GitSmartPush", function()
 	intelligent_git_push(git_root)
 end, {})
 
+-- p:  Manual intelligent Git push
 vim.keymap.set("n", "<leader>gb", function()
 	local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
 	intelligent_git_push(git_root)
