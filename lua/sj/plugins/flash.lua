@@ -340,40 +340,36 @@ return {
       desc = "Flash jump to URL and open",
     },
 
+
+
     {
       "<leader>ut",
       mode = { "n", "x", "o" },
       function()
         require("flash").jump({
-          -- Match JWT-like tokens (three base64url chunks separated by dots)
           pattern = [[eyJ[A-Za-z0-9_\-]\+\.[A-Za-z0-9_\-]\+\.[A-Za-z0-9_\-]\+]],
           search = {
             mode = "search",
-            multi_window = false,
+            multi_window = true,
             incremental = false,
           },
-          label = {
-            after = true,
-            before = false,
-            style = "inline",
-          },
-          highlight = {
-            matches = true,
-            backdrop = true,
-          },
+          label = { after = true, style = "inline" },
+          highlight = { matches = true, backdrop = true },
           action = function(match)
-            local row = match.pos[1]
-            local start_col = match.pos[2]
-            local end_col = match.end_pos[2]
-            local line = vim.fn.getline(row)
-            local token = string.sub(line, start_col, end_col)
+            -- Move cursor precisely to match start
+            vim.api.nvim_win_set_cursor(0, { match.pos[1], match.pos[2] - 1 })
+
+            -- Get the line under cursor
+            local line = vim.fn.getline(".")
+            -- Capture the token starting from cursor (robust even if spacing weird)
+            local token = line:match("eyJ[%w%-_]+%.[%w%-_]+%.[%w%-_]+")
 
             if token and #token > 0 then
               vim.fn.setreg('"', token)
               vim.fn.setreg('+', token)
-              vim.notify('🔑 Yanked access token to clipboard', vim.log.levels.INFO)
+              vim.notify("🔑 Yanked access token: " .. token:sub(1, 10) .. "...", vim.log.levels.INFO)
             else
-              vim.notify('No token found', vim.log.levels.WARN)
+              vim.notify("No token found", vim.log.levels.WARN)
             end
           end,
         })
