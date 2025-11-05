@@ -329,7 +329,7 @@ function GitPushFromNvim()
 	-- Execute the git commands sequentially
 	vim.cmd("!git add .")
 	vim.cmd("!git commit -m '" .. commit_message .. "'")
-	vim.cmd("!git push -u origin main")
+	vim.cmd("!git push")
 end
 vim.api.nvim_set_keymap("n", "<space>aj", ":lua GitPushFromNvim()<CR>", { noremap = true, silent = true })
 
