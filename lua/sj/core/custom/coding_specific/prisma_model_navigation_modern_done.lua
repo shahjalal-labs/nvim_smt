@@ -91,26 +91,25 @@ local function extract_functions()
 			end
 		end
 
-	-- 3. HURL FILES - HTTP requests (FIXED)
+	-- 3. HURL FILES - HTTP requests (IMPROVED)
 	elseif filename:match("%.api%.hurl$") or filename:match("%.hurl$") then
 		for line_num, line in ipairs(lines) do
-			-- Match HTTP methods and endpoints - SIMPLIFIED pattern
-			local http_method = line:match("^%s*(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)%s+")
+			-- Match HTTP methods and endpoints (more flexible pattern)
+			local http_method, endpoint = line:match("^%s*(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)%s+([^%s]+)")
 
-			if http_method then
-				-- Extract the entire endpoint (everything after method)
-				local endpoint = line:match("^%s*" .. http_method .. "%s+(.+)$")
-				if endpoint then
-					-- Clean up endpoint (remove variables like {{baseUrl}})
-					local clean_endpoint = endpoint:gsub("{{[^}]+}}", "")
-
-					local display_name = http_method:upper() .. " " .. clean_endpoint
-					table.insert(functions, {
-						name = display_name,
-						line = line_num,
-						display = "🚀 " .. display_name .. " (line " .. line_num .. ")",
-					})
+			if http_method and endpoint then
+				-- Clean up endpoint (remove variables like {{baseUrl}})
+				local clean_endpoint = endpoint:gsub("{{[^}]+}}", "")
+				if clean_endpoint == "" then
+					clean_endpoint = endpoint
 				end
+
+				local display_name = http_method:upper() .. " " .. clean_endpoint
+				table.insert(functions, {
+					name = display_name,
+					line = line_num,
+					display = "🚀 " .. display_name .. " (line " .. line_num .. ")",
+				})
 			end
 
 			-- Also match comment blocks and test separators
@@ -227,7 +226,7 @@ local function fuzzy_match(pattern, text)
 	return true
 end
 
--- Create picker UI with sequential numbering
+-- Create picker UI
 local function show_function_picker(functions)
 	if #functions == 0 then
 		vim.notify("No functions found in current file", vim.log.levels.WARN)
@@ -239,8 +238,8 @@ local function show_function_picker(functions)
 	local search_pattern = ""
 
 	-- Create floating window
-	local width = 85
-	local height = 18
+	local width = 80
+	local height = 15
 	local row = math.floor(((vim.o.lines - height) / 2) - 1)
 	local col = math.floor((vim.o.columns - width) / 2)
 
@@ -269,9 +268,7 @@ local function show_function_picker(functions)
 
 		for i, func in ipairs(filtered_functions) do
 			local prefix = i == selected_index and "❯ " or "  "
-			-- Add sequential numbering: 1., 2., 3., etc.
-			local number_prefix = string.format("%2d. ", i)
-			table.insert(display_lines, prefix .. number_prefix .. func.display)
+			table.insert(display_lines, prefix .. func.display)
 		end
 
 		while #display_lines < height do
@@ -382,106 +379,6 @@ local function show_function_picker(functions)
 			end,
 			{},
 		},
-		-- Number key mappings for quick selection
-		{
-			"n",
-			"1",
-			function()
-				if #filtered_functions >= 1 then
-					selected_index = 1
-					select_function()
-				end
-			end,
-			{},
-		},
-		{
-			"n",
-			"2",
-			function()
-				if #filtered_functions >= 2 then
-					selected_index = 2
-					select_function()
-				end
-			end,
-			{},
-		},
-		{
-			"n",
-			"3",
-			function()
-				if #filtered_functions >= 3 then
-					selected_index = 3
-					select_function()
-				end
-			end,
-			{},
-		},
-		{
-			"n",
-			"4",
-			function()
-				if #filtered_functions >= 4 then
-					selected_index = 4
-					select_function()
-				end
-			end,
-			{},
-		},
-		{
-			"n",
-			"5",
-			function()
-				if #filtered_functions >= 5 then
-					selected_index = 5
-					select_function()
-				end
-			end,
-			{},
-		},
-		{
-			"n",
-			"6",
-			function()
-				if #filtered_functions >= 6 then
-					selected_index = 6
-					select_function()
-				end
-			end,
-			{},
-		},
-		{
-			"n",
-			"7",
-			function()
-				if #filtered_functions >= 7 then
-					selected_index = 7
-					select_function()
-				end
-			end,
-			{},
-		},
-		{
-			"n",
-			"8",
-			function()
-				if #filtered_functions >= 8 then
-					selected_index = 8
-					select_function()
-				end
-			end,
-			{},
-		},
-		{
-			"n",
-			"9",
-			function()
-				if #filtered_functions >= 9 then
-					selected_index = 9
-					select_function()
-				end
-			end,
-			{},
-		},
 	}
 
 	-- Apply keymaps
@@ -491,19 +388,16 @@ local function show_function_picker(functions)
 		})
 	end
 
-	-- Handle typing for search (excluding numbers 1-9 which are used for quick selection)
+	-- Handle typing for search
 	for i = 32, 126 do
 		local char = string.char(i)
-		-- Skip numbers 1-9 as they are used for quick selection
-		if not char:match("[1-9]") then
-			vim.api.nvim_buf_set_keymap(buf, "n", char, "", {
-				callback = function()
-					search_pattern = search_pattern .. char
-					selected_index = 1
-					update_display()
-				end,
-			})
-		end
+		vim.api.nvim_buf_set_keymap(buf, "n", char, "", {
+			callback = function()
+				search_pattern = search_pattern .. char
+				selected_index = 1
+				update_display()
+			end,
+		})
 	end
 
 	-- Set focus to picker
@@ -557,230 +451,3 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- w: ╰──────────── Navigate to Project Functions ────────────╯
-
--- w: ╭──────────── Navigate to Prisma Enums ────────────╮
-
--- Extract all enums from current Prisma file
-local function extract_prisma_enums()
-	local enums = {}
-	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-
-	for line_num, line in ipairs(lines) do
-		-- Match enum definitions reliably
-		local enum_name = line:match("^%s*enum%s+(%w+)%s*%{")
-		if enum_name then
-			table.insert(enums, {
-				name = enum_name,
-				line = line_num,
-				display = enum_name .. " (line " .. line_num .. ")",
-			})
-		end
-	end
-
-	return enums
-end
-
--- Simple fuzzy matching function (same as before)
-local function fuzzy_match(pattern, text)
-	if not pattern or pattern == "" then
-		return true
-	end
-	pattern = pattern:lower()
-	text = text:lower()
-
-	local pattern_chars = {}
-	for char in pattern:gmatch(".") do
-		table.insert(pattern_chars, char)
-	end
-
-	local text_index = 1
-	for _, pattern_char in ipairs(pattern_chars) do
-		text_index = text:find(pattern_char, text_index, true)
-		if not text_index then
-			return false
-		end
-		text_index = text_index + 1
-	end
-
-	return true
-end
-
--- Create a simple picker UI for enums
-local function show_enum_picker(enums)
-	local filtered_enums = enums
-	local selected_index = 1
-	local search_pattern = ""
-
-	-- Create a floating window
-	local width = 60
-	local height = 15
-	local row = math.floor(((vim.o.lines - height) / 2) - 1)
-	local col = math.floor((vim.o.columns - width) / 2)
-
-	local buf = vim.api.nvim_create_buf(false, true)
-	local win = vim.api.nvim_open_win(buf, true, {
-		relative = "editor",
-		width = width,
-		height = height,
-		row = row,
-		col = col,
-		style = "minimal",
-		border = "rounded",
-	})
-
-	local function update_display()
-		filtered_enums = {}
-		for _, enum in ipairs(enums) do
-			if fuzzy_match(search_pattern, enum.name) then
-				table.insert(filtered_enums, enum)
-			end
-		end
-
-		local display_lines = { "🔍 Prisma Enums (type to filter, Enter to select, Esc to close)" }
-		table.insert(display_lines, "Search: " .. search_pattern)
-		table.insert(display_lines, "")
-
-		for i, enum in ipairs(filtered_enums) do
-			local prefix = i == selected_index and "❯ " or "  "
-			table.insert(display_lines, prefix .. enum.display)
-		end
-
-		-- Fill remaining lines
-		while #display_lines < height do
-			table.insert(display_lines, "")
-		end
-
-		vim.api.nvim_buf_set_lines(buf, 0, -1, false, display_lines)
-
-		-- Highlight selected line
-		vim.api.nvim_buf_clear_namespace(buf, -1, 0, -1)
-		if #filtered_enums > 0 then
-			vim.api.nvim_buf_add_highlight(buf, -1, "Visual", selected_index + 3, 0, -1)
-		end
-	end
-
-	update_display()
-
-	-- Key mappings
-	local function close_picker()
-		vim.api.nvim_win_close(win, true)
-		vim.api.nvim_buf_delete(buf, { force = true })
-	end
-
-	local function select_enum()
-		if #filtered_enums > 0 then
-			local selected_enum = filtered_enums[selected_index]
-			close_picker()
-
-			-- Navigate to the enum
-			vim.api.nvim_win_set_cursor(0, { selected_enum.line, 0 })
-			vim.cmd("normal! zz")
-			vim.notify("✓ Jumped to: " .. selected_enum.name, vim.log.levels.INFO)
-		end
-	end
-
-	vim.api.nvim_buf_set_keymap(buf, "n", "<CR>", "", {
-		callback = select_enum,
-	})
-
-	vim.api.nvim_buf_set_keymap(buf, "n", "<Esc>", "", {
-		callback = close_picker,
-	})
-
-	vim.api.nvim_buf_set_keymap(buf, "n", "q", "", {
-		callback = close_picker,
-	})
-
-	vim.api.nvim_buf_set_keymap(buf, "n", "<Up>", "", {
-		callback = function()
-			if selected_index > 1 then
-				selected_index = selected_index - 1
-				update_display()
-			end
-		end,
-	})
-
-	vim.api.nvim_buf_set_keymap(buf, "n", "<Down>", "", {
-		callback = function()
-			if selected_index < #filtered_enums then
-				selected_index = selected_index + 1
-				update_display()
-			end
-		end,
-	})
-
-	vim.api.nvim_buf_set_keymap(buf, "n", "<C-k>", "", {
-		callback = function()
-			if selected_index > 1 then
-				selected_index = selected_index - 1
-				update_display()
-			end
-		end,
-	})
-
-	vim.api.nvim_buf_set_keymap(buf, "n", "<C-j>", "", {
-		callback = function()
-			if selected_index < #filtered_enums then
-				selected_index = selected_index + 1
-				update_display()
-			end
-		end,
-	})
-
-	-- Handle typing for search
-	vim.api.nvim_buf_set_keymap(buf, "n", "<BS>", "", {
-		callback = function()
-			search_pattern = search_pattern:sub(1, -2)
-			selected_index = 1
-			update_display()
-		end,
-	})
-
-	-- Capture all printable characters for search
-	for i = 32, 126 do
-		local char = string.char(i)
-		vim.api.nvim_buf_set_keymap(buf, "n", char, "", {
-			callback = function()
-				search_pattern = search_pattern .. char
-				selected_index = 1
-				update_display()
-			end,
-		})
-	end
-
-	-- Set focus to the picker window
-	vim.api.nvim_set_current_win(win)
-end
-
--- Main navigation function for enums
-local function navigate_to_prisma_enum()
-	local filetype = vim.bo.filetype
-	if filetype ~= "prisma" then
-		vim.notify("This is not a Prisma schema file", vim.log.levels.WARN)
-		return
-	end
-
-	local enums = extract_prisma_enums()
-	if #enums == 0 then
-		vim.notify("No Prisma enums found in current file", vim.log.levels.WARN)
-		return
-	end
-
-	show_enum_picker(enums)
-end
-
--- Key mapping - navigate to Prisma enums
-vim.keymap.set("n", "<leader>pe", navigate_to_prisma_enum, { desc = "Navigate to Prisma enums" })
-
--- Auto-set keymap for Prisma files
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = "prisma",
-	callback = function()
-		vim.keymap.set("n", "<leader>pe", navigate_to_prisma_enum, {
-			buffer = true,
-			desc = "Navigate to Prisma enums",
-		})
-	end,
-})
-
--- w: ╰──────────── Navigate to Prisma Enums ────────────╯
