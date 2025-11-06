@@ -10,6 +10,7 @@ local function extract_functions()
 	-- 1. PRISMA SCHEMA FILES - Model navigation
 	if filename == "schema.prisma" or filetype == "prisma" then
 		for line_num, line in ipairs(lines) do
+			-- Match model definitions
 			local model_name = line:match("^%s*model%s+(%w+)%s*{")
 			if model_name then
 				table.insert(functions, {
@@ -20,115 +21,7 @@ local function extract_functions()
 			end
 		end
 
-	-- 2. ROUTES FILES - HTTP endpoints with controller names (IMPROVED)
-	elseif filename:match("%.route[s]?%.ts$") or filename:match("%.route[s]?%.js$") then
-		for line_num, line in ipairs(lines) do
-			-- Match router.METHOD( - get the HTTP method
-			local http_method = line:match("^%s*router%.(%w+)%(")
-
-			if http_method then
-				-- Look for controller function in current and next lines
-				local controller_func = nil
-				local endpoint_path = nil
-
-				-- Extract endpoint path from current line
-				endpoint_path = line:match("router%." .. http_method .. "%(%s*['\"`]([^'\"]+)['\"`]")
-					or line:match("['\"`](/[^'\"]+)['\"`]")
-
-				-- Check current line for controller function
-				controller_func = line:match("Controller%.(%w+)")
-					or line:match("(%w+Controller)%.[%w_]+")
-					or line:match("([%w]+)Controller%.[%w_]+")
-
-				-- If not found in current line, check next 10 lines
-				if not controller_func then
-					for i = line_num + 1, math.min(#lines, line_num + 10) do
-						local next_line = lines[i]
-						controller_func = next_line:match("Controller%.(%w+)")
-							or next_line:match("(%w+Controller)%.[%w_]+")
-							or next_line:match("([%w]+)Controller%.[%w_]+")
-						if controller_func then
-							break
-						end
-					end
-				end
-
-				-- Create display name
-				local display_name = ""
-				if controller_func and endpoint_path then
-					display_name = controller_func .. " - " .. http_method:upper() .. " " .. endpoint_path
-				elseif controller_func then
-					display_name = controller_func .. " (" .. http_method:upper() .. ")"
-				elseif endpoint_path then
-					display_name = http_method:upper() .. " " .. endpoint_path
-				else
-					display_name = http_method:upper() .. " route"
-				end
-
-				table.insert(functions, {
-					name = controller_func or http_method:upper() .. "_route",
-					line = line_num,
-					display = "🛣️  " .. display_name .. " (line " .. line_num .. ")",
-				})
-			end
-
-			-- Also match comment blocks for endpoints
-			local endpoint_name = line:match("//w:.*╭────────────%s+(.+)%s+─")
-				or line:match("^%s*//%s*API ENDPOINT:%s*(.+)")
-				or line:match("^%s*/%*%*%s*API ENDPOINT:%s*(.+)%s*%*/")
-				or line:match("^%s*//%s*GET%s+(.+)")
-				or line:match("^%s*//%s*POST%s+(.+)")
-				or line:match("^%s*//%s*PUT%s+(.+)")
-				or line:match("^%s*//%s*DELETE%s+(.+)")
-				or line:match("^%s*//%s*PATCH%s+(.+)")
-
-			if endpoint_name then
-				table.insert(functions, {
-					name = endpoint_name,
-					line = line_num,
-					display = "🛣️  " .. endpoint_name .. " (line " .. line_num .. ")",
-				})
-			end
-		end
-
-	-- 3. HURL FILES - HTTP requests (IMPROVED)
-	elseif filename:match("%.api%.hurl$") or filename:match("%.hurl$") then
-		for line_num, line in ipairs(lines) do
-			-- Match HTTP methods and endpoints (more flexible pattern)
-			local http_method, endpoint = line:match("^%s*(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)%s+([^%s]+)")
-
-			if http_method and endpoint then
-				-- Clean up endpoint (remove variables like {{baseUrl}})
-				local clean_endpoint = endpoint:gsub("{{[^}]+}}", "")
-				if clean_endpoint == "" then
-					clean_endpoint = endpoint
-				end
-
-				local display_name = http_method:upper() .. " " .. clean_endpoint
-				table.insert(functions, {
-					name = display_name,
-					line = line_num,
-					display = "🚀 " .. display_name .. " (line " .. line_num .. ")",
-				})
-			end
-
-			-- Also match comment blocks and test separators
-			local test_name = line:match("//w:.*╭────────────%s+(.+)%s+─")
-				or line:match("^%s*//%s*╭────────────%s+(.+)%s+─")
-				or line:match("^%s*###%s*(.+)")
-				or line:match("^%s*//%s*TEST:%s*(.+)")
-				or line:match("^%s*//%s*Endpoint:%s*(.+)")
-
-			if test_name then
-				table.insert(functions, {
-					name = test_name,
-					line = line_num,
-					display = "🚀 " .. test_name .. " test (line " .. line_num .. ")",
-				})
-			end
-		end
-
-	-- 4. SERVICE FILES - Service functions
+	-- 2. SERVICE FILES - Service functions
 	elseif filename:match("%.service[s]?%.ts$") or filename:match("%.service[s]?%.js$") then
 		for line_num, line in ipairs(lines) do
 			local func_name = line:match("^%s*const%s+(%w+)%s*=%s*async%s*%(")
@@ -145,7 +38,7 @@ local function extract_functions()
 			end
 		end
 
-	-- 5. VALIDATION FILES - Schema definitions
+	-- 3. VALIDATION FILES - Schema definitions
 	elseif filename:match("%.validation[s]?%.ts$") or filename:match("%.validation[s]?%.js$") then
 		for line_num, line in ipairs(lines) do
 			local schema_name = line:match("^%s*const%s+(%w+[Ss]chema)%s*=")
@@ -164,7 +57,7 @@ local function extract_functions()
 			end
 		end
 
-	-- 6. CONTROLLER FILES - Controller functions
+	-- 4. CONTROLLER FILES - Controller functions
 	elseif filename:match("%.controller[s]?%.ts$") or filename:match("%.controller[s]?%.js$") then
 		for line_num, line in ipairs(lines) do
 			local func_name = line:match("^%s*const%s+(%w+)%s*=%s*catchAsync")
@@ -177,6 +70,69 @@ local function extract_functions()
 					name = func_name,
 					line = line_num,
 					display = "🎮 " .. func_name .. " (line " .. line_num .. ")",
+				})
+			end
+		end
+
+	-- 5. ROUTES FILES - HTTP endpoints with controller names
+	elseif filename:match("%.route[s]?%.ts$") or filename:match("%.route[s]?%.js$") then
+		for line_num, line in ipairs(lines) do
+			-- Match router.METHOD(path, controller.function)
+			local http_method, controller_func =
+				line:match("^%s*router%.(%w+)%(%s*[%\"'`][^%\"'`]*[%\"'`]%s*,%s*([%w%.]+)")
+
+			if http_method and controller_func then
+				-- Extract just the function name (last part after dot)
+				local func_name = controller_func:match("([%w_]+)$")
+				if func_name then
+					table.insert(functions, {
+						name = func_name,
+						line = line_num,
+						display = "🛣️  "
+							.. func_name
+							.. " ("
+							.. http_method:upper()
+							.. ") (line "
+							.. line_num
+							.. ")",
+					})
+				end
+			end
+
+			-- Also match comment blocks for endpoints
+			local endpoint_name = line:match("//w:.*╭────────────%s+(.+)%s+─")
+			if endpoint_name then
+				table.insert(functions, {
+					name = endpoint_name,
+					line = line_num,
+					display = "🛣️  " .. endpoint_name .. " (line " .. line_num .. ")",
+				})
+			end
+		end
+
+	-- 6. HURL FILES - HTTP requests
+	elseif filename:match("%.api%.hurl$") or filename:match("%.hurl$") then
+		for line_num, line in ipairs(lines) do
+			-- Match HTTP methods and endpoints
+			local http_method, endpoint = line:match("^%s*(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)%s+(%S+)")
+			if http_method and endpoint then
+				local display_name = http_method .. " " .. endpoint
+				table.insert(functions, {
+					name = display_name,
+					line = line_num,
+					display = "🚀 " .. display_name .. " (line " .. line_num .. ")",
+				})
+			end
+
+			-- Also match comment blocks
+			local test_name = line:match("//w:.*╭────────────%s+(.+)%s+─")
+				or line:match("^%s*//%s*╭────────────%s+(.+)%s+─")
+
+			if test_name then
+				table.insert(functions, {
+					name = test_name,
+					line = line_num,
+					display = "🚀 " .. test_name .. " test (line " .. line_num .. ")",
 				})
 			end
 		end
