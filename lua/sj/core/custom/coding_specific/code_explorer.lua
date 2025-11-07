@@ -791,8 +791,20 @@ vim.api.nvim_create_autocmd("FileType", {
 -- w: ╰──────────── Navigate to Prisma Enums ────────────╯
 --
 --
+
 vim.keymap.set({ "n", "i" }, "<leader>cb", function()
 	local ts = vim.treesitter
+
+	local SAFE_SUFFIXES = { "Schema", "Validator", "Validation", "Zod", "Dto" }
+
+	local function remove_suffix(name)
+		for _, suf in ipairs(SAFE_SUFFIXES) do
+			if name:sub(-#suf) == suf then
+				return name:sub(1, -#suf - 1)
+			end
+		end
+		return name
+	end
 
 	local function get_node_at_cursor()
 		local parser = ts.get_parser(0)
@@ -806,12 +818,7 @@ vim.keymap.set({ "n", "i" }, "<leader>cb", function()
 	local function find_parent_block(node)
 		while node do
 			local t = node:type()
-			if
-				t == "variable_declaration"
-				or t == "lexical_declaration"
-				or t == "function_declaration"
-				or t == "call_expression" -- ✅ Now handles router calls
-			then
+			if t == "variable_declaration" or t == "lexical_declaration" or t == "function_declaration" then
 				return node
 			end
 			node = node:parent()
@@ -819,12 +826,28 @@ vim.keymap.set({ "n", "i" }, "<leader>cb", function()
 		return nil
 	end
 
-	-- ✅ Improved name extraction — works for controller, service, router, validation
+	-- NEW: detect router-style call (router.post(...))
+	local function find_router_call(node)
+		while node do
+			if node:type() == "call_expression" then
+				return node
+			end
+			node = node:parent()
+		end
+		return nil
+	end
+
+	local function extract_name_from_reference(node)
+		local text = vim.treesitter.get_node_text(node, 0)
+		-- Example: DoctorScheduleController.createDoctorSchedule
+		local name = text:match("([%w_]+)$") or text
+		return name
+	end
+
 	local function extract_name(node)
+		-- variable_declarator
 		for child in node:iter_children() do
 			local ct = child:type()
-
-			-- variable assignment: const foo = ...
 			if ct == "variable_declarator" then
 				for c in child:iter_children() do
 					if c:type() == "identifier" then
@@ -832,65 +855,76 @@ vim.keymap.set({ "n", "i" }, "<leader>cb", function()
 					end
 				end
 			end
-
-			-- function foo() { ... }
+			-- function_declaration
 			if ct == "identifier" then
 				return vim.treesitter.get_node_text(child, 0)
 			end
 		end
-
-		-- ✅ router, express handler, zod validator, prisma chained calls
-		if node:type() == "call_expression" then
-			for child in node:iter_children() do
-				if child:type() == "arguments" then
-					local last = nil
-					for arg in child:iter_children() do
-						last = arg
-					end
-					if last then
-						-- Controller.method → return method
-						for sub in last:iter_children() do
-							if sub:type() == "property_identifier" or sub:type() == "identifier" then
-								return vim.treesitter.get_node_text(sub, 0)
-							end
-						end
-					end
-				end
-			end
-		end
-
 		return nil
 	end
 
 	local node = get_node_at_cursor()
+
+	-- ✅ Router support first
+	if node:type() == "property_identifier" or node:type() == "identifier" then
+		-- Try to detect function reference in router call
+		local router_call = find_router_call(node)
+		if router_call then
+			local name = extract_name_from_reference(node)
+			name = remove_suffix(name)
+
+			-- get full router call lines
+			local s_row, _, e_row, e_col = router_call:range()
+			local lines = vim.api.nvim_buf_get_lines(0, s_row, e_row + 1, false)
+			lines[#lines] = string.sub(lines[#lines], 1, e_col)
+
+			local top = "//w: (start)╭──────────── "
+				.. name
+				.. " ────────────╮"
+			local bottom = "//w: (end)  ╰──────────── "
+				.. name
+				.. " ────────────╯"
+
+			local new_lines = { top }
+			vim.list_extend(new_lines, lines)
+			table.insert(new_lines, bottom)
+
+			vim.api.nvim_buf_set_lines(0, s_row, e_row + 1, false, new_lines)
+			return
+		end
+	end
+
+	-- ✅ Standard function / variable wrapping
 	local parent = find_parent_block(node)
 
-	-- If cursor is not inside a known block → insert empty wrapper
 	if not parent then
+		-- Insert empty block
 		local row = vim.api.nvim_win_get_cursor(0)[1] - 1
 		local top = "//w: (start)╭────────────   ────────────╮"
+		local mid = ""
 		local bottom = "//w: (end)  ╰────────────   ────────────╯"
-		vim.api.nvim_buf_set_lines(0, row, row, false, { top, "", bottom })
+		vim.api.nvim_buf_set_lines(0, row, row, false, { top, mid, bottom })
 		vim.api.nvim_win_set_cursor(0, { row + 2, 0 })
 		return
 	end
 
-	-- Wrap detected block
 	local s_row, _, e_row, e_col = parent:range()
 	local lines = vim.api.nvim_buf_get_lines(0, s_row, e_row + 1, false)
 	lines[#lines] = string.sub(lines[#lines], 1, e_col)
 
 	local name = extract_name(parent) or ""
+	name = remove_suffix(name)
+
 	local top = "//w: (start)╭──────────── "
 		.. name
-		.. "   ────────────╮"
+		.. " ────────────╮"
 	local bottom = "//w: (end)  ╰──────────── "
 		.. name
-		.. "   ────────────╯"
+		.. " ────────────╯"
 
 	local new_lines = { top }
 	vim.list_extend(new_lines, lines)
 	table.insert(new_lines, bottom)
 
 	vim.api.nvim_buf_set_lines(0, s_row, e_row + 1, false, new_lines)
-end, { desc = "Wrap function/route/controller into fancy comment block" })
+end, { desc = "Wrap function / route / validation block" })
