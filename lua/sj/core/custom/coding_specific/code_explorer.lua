@@ -1,5 +1,7 @@
--- Code Jumper - Smart project navigation
--- <leader>pf to open, j/k navigate, Enter jump, 1-9 quick select
+-- Code Jumper - Smart project navigati
+
+-- <leader>pf to open, j/k navigate, Enter jump, 1-9 quick sele
+
 -- Supports: Prisma models, Controllers, Services, Routes, Hurl, Validations, Constants
 -- w: ╭──────────── Navigate to Project Functions ────────────╮
 
@@ -788,78 +790,8 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- w: ╰──────────── Navigate to Prisma Enums ────────────╯
 --
---[[ 
--- Wrap function using Treesitter
-vim.keymap.set("n", "<leader>cb", function()
-	local ts = vim.treesitter
-
-	local function get_node_at_cursor()
-		local parser = ts.get_parser(0)
-		local tree = parser:parse()[1]
-		local root = tree:root()
-		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-		row = row - 1
-		return root:named_descendant_for_range(row, col, row, col)
-	end
-
-	local function find_parent_assignment(node)
-		while node do
-			local type = node:type()
-			if
-				type == "variable_declaration"
-				or type == "lexical_declaration"
-				or type == "function_declaration"
-				or type == "method_definition"
-			then
-				return node
-			end
-			node = node:parent()
-		end
-		return nil
-	end
-
-	local function extract_text(node)
-		local s_row, _, e_row, e_col = node:range()
-		local lines = vim.api.nvim_buf_get_lines(0, s_row, e_row + 1, false)
-		lines[#lines] = string.sub(lines[#lines], 1, e_col)
-		return lines, s_row, e_row
-	end
-
-	local function get_name(node)
-		for child in node:iter_children() do
-			if child:type():match("identifier") then
-				return vim.treesitter.get_node_text(child, 0)
-			end
-		end
-		return "UNKNOWN"
-	end
-
-	-- Main execution
-	local node = get_node_at_cursor()
-	local parent = find_parent_assignment(node)
-	if not parent then
-		print("No function/variable block found.")
-		return
-	end
-
-	local lines, start_row, end_row = extract_text(parent)
-	local name = get_name(parent)
-
-	local top = "//w: (start)╭──────────── "
-		.. name
-		.. "   ────────────╮"
-	local bottom = "//w: (end)  ╰──────────── "
-		.. name
-		.. "   ────────────╯"
-
-	local new_lines = { top }
-	vim.list_extend(new_lines, lines)
-	table.insert(new_lines, bottom)
-
-	vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, new_lines)
-end, { desc = "Wrap function into fancy comment block" }) ]]
-
-vim.keymap.set("n", "<leader>cb", function()
+--
+vim.keymap.set({ "n", "i" }, "<leader>cb", function()
 	local ts = vim.treesitter
 
 	local function get_node_at_cursor()
@@ -874,7 +806,12 @@ vim.keymap.set("n", "<leader>cb", function()
 	local function find_parent_block(node)
 		while node do
 			local t = node:type()
-			if t == "variable_declaration" or t == "lexical_declaration" or t == "function_declaration" then
+			if
+				t == "variable_declaration"
+				or t == "lexical_declaration"
+				or t == "function_declaration"
+				or t == "call_expression" -- ✅ Now handles router calls
+			then
 				return node
 			end
 			node = node:parent()
@@ -882,10 +819,12 @@ vim.keymap.set("n", "<leader>cb", function()
 		return nil
 	end
 
+	-- ✅ Improved name extraction — works for controller, service, router, validation
 	local function extract_name(node)
 		for child in node:iter_children() do
 			local ct = child:type()
-			-- variable assignment
+
+			-- variable assignment: const foo = ...
 			if ct == "variable_declarator" then
 				for c in child:iter_children() do
 					if c:type() == "identifier" then
@@ -893,29 +832,50 @@ vim.keymap.set("n", "<leader>cb", function()
 					end
 				end
 			end
-			-- function declaration
+
+			-- function foo() { ... }
 			if ct == "identifier" then
 				return vim.treesitter.get_node_text(child, 0)
 			end
 		end
+
+		-- ✅ router, express handler, zod validator, prisma chained calls
+		if node:type() == "call_expression" then
+			for child in node:iter_children() do
+				if child:type() == "arguments" then
+					local last = nil
+					for arg in child:iter_children() do
+						last = arg
+					end
+					if last then
+						-- Controller.method → return method
+						for sub in last:iter_children() do
+							if sub:type() == "property_identifier" or sub:type() == "identifier" then
+								return vim.treesitter.get_node_text(sub, 0)
+							end
+						end
+					end
+				end
+			end
+		end
+
 		return nil
 	end
 
 	local node = get_node_at_cursor()
 	local parent = find_parent_block(node)
 
-	-- If no function/variable block → Insert empty wrapper and move cursor inside
+	-- If cursor is not inside a known block → insert empty wrapper
 	if not parent then
 		local row = vim.api.nvim_win_get_cursor(0)[1] - 1
 		local top = "//w: (start)╭────────────   ────────────╮"
-		local mid = ""
 		local bottom = "//w: (end)  ╰────────────   ────────────╯"
-		vim.api.nvim_buf_set_lines(0, row, row, false, { top, mid, bottom })
-		vim.api.nvim_win_set_cursor(0, { row + 2, 0 }) -- place cursor in middle blank line
+		vim.api.nvim_buf_set_lines(0, row, row, false, { top, "", bottom })
+		vim.api.nvim_win_set_cursor(0, { row + 2, 0 })
 		return
 	end
 
-	-- We have a block → wrap it
+	-- Wrap detected block
 	local s_row, _, e_row, e_col = parent:range()
 	local lines = vim.api.nvim_buf_get_lines(0, s_row, e_row + 1, false)
 	lines[#lines] = string.sub(lines[#lines], 1, e_col)
@@ -933,4 +893,4 @@ vim.keymap.set("n", "<leader>cb", function()
 	table.insert(new_lines, bottom)
 
 	vim.api.nvim_buf_set_lines(0, s_row, e_row + 1, false, new_lines)
-end, { desc = "Wrap function into fancy comment block" })
+end, { desc = "Wrap function/route/controller into fancy comment block" })
