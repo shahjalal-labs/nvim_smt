@@ -10,6 +10,10 @@
 │       │   ├── custom
 │       │   │   ├── checking2.lua
 │       │   │   ├── checking-feature.lua
+│       │   │   ├── coding_specific
+│       │   │   │   ├── code_explorer.lua
+│       │   │   │   ├── init.lua
+│       │   │   │   └── prisma_model_navigation_prev.lua
 │       │   │   ├── CustomMode
 │       │   │   │   ├── init.lua
 │       │   │   │   └── ScrollMode.lua
@@ -28,6 +32,9 @@
 │       │   │   │   ├── readmeGenerate.lua
 │       │   │   │   └── smartCopyPaste.lua
 │       │   │   ├── html.lua
+│       │   │   ├── HttpApiTesting
+│       │   │   │   ├── init.lua
+│       │   │   │   └── rest_commands.lua
 │       │   │   ├── init.lua
 │       │   │   ├── insertMode.lua
 │       │   │   ├── JsTsPro
@@ -36,6 +43,7 @@
 │       │   │   │   ├── jsTs.lua
 │       │   │   │   ├── jsxPro2.lua
 │       │   │   │   ├── jsxPro.lua
+│       │   │   │   ├── jwt_decode.lua
 │       │   │   │   ├── reBuildModule.lua
 │       │   │   │   └── snippets
 │       │   │   │       ├── html.lua
@@ -52,8 +60,14 @@
 │       │   │       ├── build.lua
 │       │   │       ├── fileUtils
 │       │   │       │   ├── fileNavigate.lua
+│       │   │       │   ├── file_navigation
+│       │   │       │   │   ├── init.lua
+│       │   │       │   │   ├── navigate_to_controller.lua
+│       │   │       │   │   ├── navigate_to_routes.lua
+│       │   │       │   │   └── navigate_to_service.lua
 │       │   │       │   ├── fileOperation.lua
-│       │   │       │   └── init.lua
+│       │   │       │   ├── init.lua
+│       │   │       │   └── module_files_creation.lua
 │       │   │       ├── init.lua
 │       │   │       ├── nvimTerminal.lua
 │       │   │       ├── tmuxCommandSender.lua
@@ -81,7 +95,6 @@
 │           ├── dressing.lua
 │           ├── emoji.lua
 │           ├── error-lens.lua
-│           ├── fire-nvim.lua
 │           ├── flash.lua
 │           ├── formatting.lua
 │           ├── fzf-lua.lua
@@ -112,7 +125,7 @@
 │           ├── rainbow-matching.lua
 │           ├── smearCursor.lua
 │           ├── snacks.lua
-│           ├── supermaven.lua
+│           ├── super_maven.lua
 │           ├── surround.lua
 │           ├── tailwind.lua
 │           ├── tailwind-tools.lua
@@ -132,6 +145,6 @@
 ├── README.md
 └── structure.md
 
-15 directories, 115 files
+18 directories, 125 files
 
 ```
