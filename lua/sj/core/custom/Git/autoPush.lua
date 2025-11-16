@@ -186,7 +186,7 @@ end
 end ]]
 
 -- Modified intelligent_git_push with configurable minimum LOC
-local function intelligent_git_push(git_root, min_loc)
+function Intelligent_git_push(git_root, min_loc)
 	min_loc = min_loc or 17 -- Default to 17 if not provided
 
 	if not git_root or git_root == "" then
@@ -287,7 +287,7 @@ local function start_git_timer(git_root)
 		5000,
 		420000, -- 7 mins
 		vim.schedule_wrap(function()
-			intelligent_git_push(git_root)
+			Intelligent_git_push(git_root)
 		end)
 	)
 
@@ -314,12 +314,12 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 vim.api.nvim_create_user_command("GitSmartPush", function()
 	local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-	intelligent_git_push(git_root)
+	Intelligent_git_push(git_root)
 end, {})
 
 -- p:  Manual intelligent Git push
 vim.keymap.set("n", "<leader>gb", function()
 	local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-	intelligent_git_push(git_root)
+	Intelligent_git_push(git_root)
 end, { desc = "Manual intelligent Git push" })
 --w: (end)  ╰──────────── auto push after every 7 mnts  ────────────╯
