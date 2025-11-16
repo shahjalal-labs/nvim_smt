@@ -26,9 +26,9 @@ vim.keymap.set("i", "<leader>jt", "`${}`<Esc>hi", { desc = "Insert template stri
 
 --w: (end)  ╰────────────   ────────────╯
 
---w:05/11/2024  09:55 AM Tue GMT+6  Sharifpur, Gazipur, Dhaka
---p: moveToEndOfPrevVariableName
 --w: (start)╭──────────── moveToEndOfPrevVariableName ────────────╮
+--p: moveToEndOfPrevVariableName
+
 function moveToEndOfPrevVariableName()
 	local current_pos = vim.api.nvim_win_get_cursor(0)
 	local line_num = current_pos[1]
@@ -179,16 +179,16 @@ vim.api.nvim_set_keymap("n", "<space>jd", "yiw<CR>o<C-o>p", { noremap = true, si
 --
 --
 --
---w: insert type with space jj
+--w: (start)╭──────────── insert typescript type  ────────────╮
+--w: insert typescript type
 vim.api.nvim_set_keymap("n", "<space>jj", "otype Name= ;<Esc>bb viwc", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", "<space>jk", "type Name= ;<Esc>bb viwc", { noremap = true, silent = true })
-
---w: 07/11/2024 06:54 AM Thu GMT+6 Sharifpur, Gazipur, Dhaka
+--w: (end)  ╰────────────  insert typescript type  ────────────╯
 --
 --
---w: change_current_window_panes_to_project_root function as a global function
---w: (start)╭────────────  ────────────╮
--- resize with predefined tmux pane, cd other panes to nvim project root and
+--
+--w: (start)╭──────────── resize with preset tmux pane ────────────╮
+-- resize with preset tmux pane, cd other panes to nvim project root and clear tmux panes except current nvim pane
 function _G.change_current_window_panes_to_project_root()
 	-- Step 1: Get current working directory in Neovim
 	local project_root = vim.fn.getcwd()
@@ -220,7 +220,7 @@ vim.api.nvim_set_keymap(
 	":lua change_current_window_panes_to_project_root()<CR>",
 	{ noremap = true, silent = true }
 )
---w: (end)  ╰────────────  ────────────╯
+--w: (end)  ╰──────────── resize with preset tmux pane ────────────╯
 
 --
 --
