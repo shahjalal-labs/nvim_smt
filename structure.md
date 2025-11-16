@@ -11,9 +11,6 @@
 │       │   │   ├── ai
 │       │   │   │   ├── init.lua
 │       │   │   │   └── module_content_combiner.lua
-│       │   │   ├── blockman
-│       │   │   │   ├── blockman.lua
-│       │   │   │   └── init.lua
 │       │   │   ├── checking2.lua
 │       │   │   ├── checking-feature.lua
 │       │   │   ├── coding_specific
@@ -27,6 +24,10 @@
 │       │   │   │   ├── autoPush2.lua
 │       │   │   │   ├── autoPush.lua
 │       │   │   │   ├── clone.lua
+│       │   │   │   ├── Github
+│       │   │   │   │   ├── github2.lua
+│       │   │   │   │   ├── github.lua
+│       │   │   │   │   └── init.lua
 │       │   │   │   ├── github2.lua
 │       │   │   │   ├── githubDescription.lua
 │       │   │   │   ├── github.lua
@@ -153,6 +154,6 @@
 ├── README.md
 └── structure.md
 
-20 directories, 131 files
+20 directories, 132 files
 
 ```

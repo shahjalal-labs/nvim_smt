@@ -1,6 +1,8 @@
---w: (start)╭────────────   ────────────╮
---p: updated  for adding multiple remote like :   labs    git@github.com:shahjalal-labs/flo_backend.git (fetch)
+--w: (start)╭────────────  auto push after every 7 mnts ────────────╮
+--p: updated  for adding multiple remote like :
+-- labs    git@github.com:shahjalal-labs/flo_backend.git (fetch)
 -- origin  git@github.com:smTech24-official/nasonrice_backend.git (fetch)
+
 local uv = vim.loop
 local active_git_roots = {}
 
@@ -100,7 +102,7 @@ end
 
 -- Intelligent Git push (multi-remote)
 --w: (start)╭──────────── intelligent_git_push ────────────╮
-local function intelligent_git_push(git_root)
+--[[ local function intelligent_git_push(git_root)
 	if not git_root or git_root == "" then
 		return
 	end
@@ -123,6 +125,96 @@ local function intelligent_git_push(git_root)
 				return
 			end
 
+			local commit_msg = generate_git_summary(git_root)
+			if not commit_msg then
+				vim.schedule(function()
+					vim.notify("⏸️ Nothing to commit in " .. git_root, vim.log.levels.INFO)
+				end)
+				return
+			end
+
+			-- Link GitHub issues before commit
+			link_github_issues(git_root, commit_msg)
+
+			-- Detect all push remotes (GitHub ones)
+			local remote_lines = vim.fn.systemlist("git -C " .. git_root .. " remote -v")
+			local remotes_to_push = {}
+			for _, line in ipairs(remote_lines) do
+				local name, url = line:match("^(%S+)%s+(%S+)%s+%(push%)")
+				if name and url and url:match("github%.com") then
+					remotes_to_push[name] = true
+				end
+			end
+			if vim.tbl_isempty(remotes_to_push) then
+				remotes_to_push["origin"] = true
+			end
+
+			-- Commit once
+			local commit_cmd = string.format('cd "%s" && git commit -m "%s"', git_root, commit_msg)
+			local commit_code = os.execute(commit_cmd)
+			if commit_code ~= 0 then
+				vim.notify("❌ Commit failed in " .. git_root, vim.log.levels.ERROR)
+				return
+			end
+
+			-- Push to all remotes sequentially
+			for remote, _ in pairs(remotes_to_push) do
+				local push_cmd = string.format('cd "%s" && git push %s HEAD', git_root, remote)
+				vim.fn.jobstart({ "bash", "-c", push_cmd }, {
+					on_exit = function(_, code)
+						vim.schedule(function()
+							if code == 0 then
+								vim.notify("✅ Pushed to remote: " .. remote, vim.log.levels.INFO)
+							else
+								vim.notify("❌ Push failed for remote: " .. remote, vim.log.levels.ERROR)
+							end
+						end)
+					end,
+				})
+			end
+
+			-- Create GitHub release once
+			local release_cmd = string.format(
+				'gh release create "release-%s" --title "New Release %s" --notes "%s"',
+				os.date("%Y%m%d%H%M%S"),
+				os.date("%Y-%m-%d %H:%M:%S"),
+				commit_msg
+			)
+			vim.fn.system(release_cmd)
+		end,
+	})
+end ]]
+
+-- Modified intelligent_git_push with configurable minimum LOC
+local function intelligent_git_push(git_root, min_loc)
+	min_loc = min_loc or 17 -- Default to 17 if not provided
+
+	if not git_root or git_root == "" then
+		return
+	end
+	if not is_valid_repo(git_root) then
+		vim.schedule(function()
+			vim.notify("🚫 Not a shahjalal-labs repo: " .. git_root, vim.log.levels.WARN)
+		end)
+		return
+	end
+
+	vim.fn.jobstart({ "git", "-C", git_root, "add", "." }, {
+		on_exit = function()
+			local diff = vim.fn.system("git -C " .. git_root .. " diff --cached --shortstat")
+			local insertions = tonumber(diff:match("(%d+) insertion")) or 0
+			local deletions = tonumber(diff:match("(%d+) deletion")) or 0
+			if insertions + deletions < min_loc then
+				vim.schedule(function()
+					vim.notify(
+						"⏸️ Skipped push — changes less than " .. min_loc .. " LOC: " .. git_root,
+						vim.log.levels.INFO
+					)
+				end)
+				return
+			end
+
+			-- ... rest of your existing function remains the same ...
 			local commit_msg = generate_git_summary(git_root)
 			if not commit_msg then
 				vim.schedule(function()
@@ -230,4 +322,4 @@ vim.keymap.set("n", "<leader>gb", function()
 	local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
 	intelligent_git_push(git_root)
 end, { desc = "Manual intelligent Git push" })
---w: (end)  ╰────────────   ────────────╯
+--w: (end)  ╰──────────── auto push after every 7 mnts  ────────────╯
