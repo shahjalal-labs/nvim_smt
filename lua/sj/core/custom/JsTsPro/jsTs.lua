@@ -134,6 +134,7 @@ vim.api.nvim_set_keymap(
 --
 --
 --
+--w: (start)╭──────────── comment_all_console_logs_except_current ────────────╮
 --w:   comment out all console.log statements except the one at the current cursor position
 function comment_all_console_logs_except_current()
 	-- Get the line number of the current cursor position
@@ -159,19 +160,18 @@ vim.keymap.set(
 	"<cmd>lua comment_all_console_logs_except_current()<CR>",
 	{ noremap = true, silent = true }
 )
--- vim.keymap.set("n", "<space>jc", comment_all_console_logs_except_current, { noremap = true, silent = true })
+--w: (end)  ╰──────────── comment_all_console_logs_except_current ────────────╯
+--
+--
+--
 
---
---
---
---
---
---p: press console.log
--- Insert mode mapping for 'jsc'
+--w: (start)╭────────────  Insert console.log ────────────╮
+--t: Insert console.log
 vim.api.nvim_set_keymap("i", "<space>ji", "console.log(``)<Esc>hi", { noremap = true, silent = true })
-
 -- Normal mode mapping for 'space ji'
 vim.api.nvim_set_keymap("n", "<space>ji", "oconsole.log(``)<Esc>hi", { noremap = true, silent = true })
+
+--w: (end)  ╰────────────  Insert console.log ────────────╯
 
 --h: copy the current word down
 vim.api.nvim_set_keymap("i", "<space>jd", "<Esc>yiw<CR>O<C-o>p", { noremap = true, silent = true })
@@ -187,27 +187,6 @@ vim.api.nvim_set_keymap("i", "<space>jk", "type Name= ;<Esc>bb viwc", { noremap 
 --
 --
 --w: change_current_window_panes_to_project_root function as a global function
---[[ function _G.change_current_window_panes_to_project_root()
-	-- Determine the project root directory
-	local project_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-	if vim.v.shell_error ~= 0 then
-		project_root = vim.fn.getcwd() -- Fall back to the current working directory if not in a Git repo
-	end
-
-	-- Get the Tmux pane ID for the current Neovim pane
-	local current_pane = vim.fn.systemlist("tmux display-message -p '#{pane_id}'")[1]
-
-	-- Command to change all panes in the current Tmux window (except Neovim pane) to the project root
-	local tmux_command = "tmux list-panes -F '#{pane_id}' | grep -v '"
-		.. current_pane
-		.. "' | xargs -I {} tmux send-keys -t {} 'cd "
-		.. project_root
-		.. " && clear' Enter"
-
-	-- Execute the command
-	vim.fn.system(tmux_command)
-end ]]
-
 function _G.change_current_window_panes_to_project_root()
 	-- Step 1: Get current working directory in Neovim
 	local project_root = vim.fn.getcwd()
@@ -239,15 +218,15 @@ vim.api.nvim_set_keymap(
 	":lua change_current_window_panes_to_project_root()<CR>",
 	{ noremap = true, silent = true }
 )
---w: 29/11/2024 06:43 PM Fri GMT+6 Sharifpur, Gazipur, Dhaka
--- vim.keymap.set({ "n", "x", "t", "o" }, ",", "<Cmd>HopChar1<CR>", { noremap = true, silent = true })
+--
+--
 -- by go starting of the line and press a space
 vim.keymap.set("n", "I", "I <Left>", { noremap = true, silent = true })
 --
 --
 --
 --
---
+--w: (start)╭──────────── CopyGitRemote ────────────╮
 local function CopyGitRemote()
 	-- Execute `git remote -v` and capture the output
 	local git_remotes = vim.fn.systemlist("git remote -v")
@@ -270,6 +249,8 @@ end
 
 -- Bind the function to <space>ac
 vim.keymap.set("n", "<space>ac", CopyGitRemote, { desc = "Copy git remote URL to clipboard" })
+
+--w: (end)  ╰──────────── CopyGitRemote ────────────╯
 --
 --
 --
@@ -277,6 +258,8 @@ vim.keymap.set("n", "<space>ac", CopyGitRemote, { desc = "Copy git remote URL to
 --
 -- Universal to camelCase converter
 -- Convert any text format to camelCase
+--w: (start)╭──────────── to_camel_case ────────────╮
+--take clipboard text & Convert  format to camelCase and paste to the cursor position
 local function to_camel_case(str)
 	-- Replace separators with space
 	str = str:gsub("[%-%._/]", " ")
@@ -317,3 +300,5 @@ end
 -- Map in both modes
 vim.keymap.set("n", "<leader>uc", paste_camel_normal, { noremap = true, silent = true })
 vim.keymap.set("i", "<leader>uc", paste_camel_insert, { noremap = true, silent = true })
+
+--w: (end)  ╰──────────── to_camel_case ────────────╯
