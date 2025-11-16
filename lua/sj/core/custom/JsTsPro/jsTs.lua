@@ -1,35 +1,34 @@
---t: Function to insert a return statement based on the current file type
--- Set up the keybinding for m-r
+--w: (start)╭────────────  insert return ────────────╮
+--t:  insert a return statement based on the current file type
 vim.api.nvim_set_keymap("n", "<M-r>", "oreturn ", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", "<M-r>", "return ", { noremap = true, silent = true })
+--w: (end)  ╰────────────  insert return ────────────╯
 --
 --
---
---
---
---
---w:  insert const variable with alt-m
+
+--w: (start)╭────────────  insert const variable ────────────╮
+--w:  insert const variable
 vim.api.nvim_set_keymap("n", "<M-m>", "oconst = ;<Left><Left><Left>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", "<M-m>", "<C-o>o const = ;<Left><Left><Left>", { noremap = true, silent = true })
--- vim.api.nvim_set_keymap("i", "<M-m>", "<C-o>o const variableName= ;<Esc>bb viwc", { noremap = true, silent = true })
+--w: (end)  ╰────────────  insert const variable ────────────╯
 --
 --
 --
---
---
---
---
---
---t: tempate string
+--w: (start)╭────────────  insert tempate string ────────────╮
+--t: insert tempate string
 vim.keymap.set("n", "<leader>jt", "i`${}`<Esc>i", { desc = "Insert template string" })
 vim.keymap.set("i", "<leader>jt", "`${}`<Esc>hi", { desc = "Insert template string" })
+--w: (end)  ╰────────────  insert tempate string ────────────╯
 --
 --
 --
---
---
+--w: (start)╭────────────   ────────────╮
+
+--w: (end)  ╰────────────   ────────────╯
+
 --w:05/11/2024  09:55 AM Tue GMT+6  Sharifpur, Gazipur, Dhaka
 --p: moveToEndOfPrevVariableName
+--w: (start)╭──────────── moveToEndOfPrevVariableName ────────────╮
 function moveToEndOfPrevVariableName()
 	local current_pos = vim.api.nvim_win_get_cursor(0)
 	local line_num = current_pos[1]
@@ -75,13 +74,14 @@ vim.api.nvim_set_keymap(
 	"<cmd>lua moveToEndOfPrevVariableName()<CR>",
 	{ noremap = true, silent = true }
 )
---
+--w: (end)  ╰──────────── moveToEndOfPrevVariableName ────────────╯
 --
 --
 --
 --
 --w: 05/11/2024  10:17 AM Tue GMT+6  Sharifpur, Gazipur, Dhaka
 --
+--w: (start)╭──────────── moveToEndOfNextVariableName ────────────╮
 --p: moveToEndOfNextVariableName
 function moveToEndOfNextVariableName()
 	local current_pos = vim.api.nvim_win_get_cursor(0)
@@ -129,9 +129,7 @@ vim.api.nvim_set_keymap(
 	"<cmd>lua moveToEndOfNextVariableName()<CR>",
 	{ noremap = true, silent = true }
 )
-
---
---
+--w: (end)  ╰──────────── moveToEndOfNextVariableName ────────────╯
 --
 --
 --
