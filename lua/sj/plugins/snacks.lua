@@ -198,7 +198,7 @@ return {
 				desc = "Rename File",
 			},
 			{
-				"<leader>,gB",
+				"<leader>gm",
 				function()
 					Snacks.gitbrowse()
 				end,

@@ -1,4 +1,5 @@
---w: (start)╭──────────── clone_github_raw_to_current_dir ────────────╮
+--w: (start)╭──────────── clone_github file as current opened file's sibling ────────────╮
+-- copy any file url from github, and leader gf will clone it to current opened file's sibling
 local function clone_github_raw_to_current_dir()
 	-- 📋 Step 1: Get GitHub URL from clipboard
 	local github_url = vim.fn.getreg("+") -- + means system clipboard
