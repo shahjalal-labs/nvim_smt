@@ -224,8 +224,10 @@ vim.api.nvim_set_keymap(
 
 --
 --
--- by go starting of the line and press a space
+--w: (start)╭──────────── go begin of line and press space  ────────────╮
+-- go beginning of the line and press a space
 vim.keymap.set("n", "I", "I <Left>", { noremap = true, silent = true })
+--w: (end)  ╰──────────── go begin of line and press space  ────────────╯
 --
 --
 --
@@ -255,7 +257,6 @@ end
 vim.keymap.set("n", "<space>ac", CopyGitRemote, { desc = "Copy git remote URL to clipboard" })
 
 --w: (end)  ╰──────────── CopyGitRemote ────────────╯
---
 --
 --
 --
@@ -314,5 +315,4 @@ vim.keymap.set(
 	paste_camel_insert,
 	{ noremap = true, silent = true, desc = "Convert clipboard text to camelCase and paste" }
 )
-
 --w: (end)  ╰──────────── to_camel_case ────────────╯

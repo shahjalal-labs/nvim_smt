@@ -1,6 +1,5 @@
 vim.keymap.set({ "i", "n" }, "<A-c>", "< /> <LEFT><LEFT><LEFT><LEFT>", { noremap = true })
-
---w:╭──────────── Block Start ────────────╮
+--w: (start) ╭──────────── WrapJsxWithDiv ────────────╮
 --p: wrap current line  with div
 function WrapJsxWithDiv()
 	local mode = vim.fn.mode()
@@ -50,7 +49,7 @@ end
 
 vim.keymap.set({ "n", "v" }, "<leader>ja", WrapJsxWithDiv, { desc = "Wrap JSX tag in <div>" })
 --
---t: ╰───────────── Block End ─────────────╯
+--w:(end) ╰───────────── WrapJsxWithDiv ─────────────╯
 --
 --
 --
@@ -384,8 +383,6 @@ end
 
 -- Keymap for both normal and insert mode
 vim.keymap.set({ "n", "i" }, "<leader>jg", InsertJsxFragmentAtCursor, { desc = "Insert JSX fragment <></> at cursor" })
-
-
 
 --
 --
