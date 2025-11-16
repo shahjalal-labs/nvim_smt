@@ -468,7 +468,7 @@ vim.keymap.set("n", "<leader>ar", RunGitRemoteInTmuxPane, { desc = "Run `git rem
 
 --
 --
--- ╭──────────── Block Start ────────────╮
+--w: (start)╭──────────── GhCloneView ────────────╮
 vim.api.nvim_create_user_command("GhCloneView", function()
 	local repo = vim.fn.system("wl-paste"):gsub("%s+", "")
 	if repo == "" or not repo:match(".+/.+") then
@@ -510,11 +510,11 @@ vim.api.nvim_create_user_command("GhCloneView", function()
 end, {})
 
 vim.keymap.set("n", "<leader>gc", ":GhCloneView<CR>", { desc = "Clone GitHub repo from clipboard" })
--- ╰───────────── Block End ─────────────╯
+--w:(end) ╰───────────── GhCloneView ─────────────╯
 --
 --
 
---w: ╭──────────── Block Start ────────────╮
+--w: (start) ╭──────────── Clone GitHub repo and open in tmux async ────────────╮
 vim.api.nvim_create_user_command("GhCloneTmuxView", function()
 	local repo = vim.fn.system("wl-paste"):gsub("%s+", "")
 	if repo == "" or not repo:match(".+/.+") then
@@ -584,4 +584,4 @@ end, {})
 
 vim.keymap.set("n", "<leader>ga", ":GhCloneTmuxView<CR>", { desc = "Clone GitHub repo and open in tmux async" })
 
---w: ╰───────────── Block End ─────────────╯
+--w:(end) ╰───────────── Clone GitHub repo and open in tmux async ─────────────╯
