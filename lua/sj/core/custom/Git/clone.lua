@@ -31,4 +31,4 @@ end
 vim.keymap.set("n", "<leader>gf", clone_github_raw_to_current_dir, {
 	desc = "📥 Clone GitHub File from Clipboard into Current File's Directory",
 })
---w: (end)  ╰──────────── clone_github_raw_to_current_dir ────────────╯
+--w: (end)  ╰──────────── clone_github file as current opened file's sibling ────────────╯

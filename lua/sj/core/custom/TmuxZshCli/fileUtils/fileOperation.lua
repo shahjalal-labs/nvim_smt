@@ -1,7 +1,7 @@
 --w: 1╭──────────── Block Start ────────────╮
 --w: 1╰───────────── Block End ─────────────╯
 
---w: 1╭──────────── Block Start ────────────╮
+--w: 1╭──────────── Open current file in browser ────────────╮
 --p: Open current file in browser (firefox/chrome)
 local function open_with_firefox_or_chrome(filepath)
 	local browser
@@ -26,10 +26,10 @@ vim.keymap.set({ "n", "i" }, "<space>sa", function()
 	open_with_firefox_or_chrome(filepath)
 end, { desc = "Open current file in browser (firefox/chrome)" })
 
---w: 1╰───────────── Block End ─────────────╯
+--w: 1╰───────────── Open current file in browser ─────────────╯
 --
 --w: 2╭──────────── Block Start ────────────╮
--- Function to yank file path relative to Git root or CWD
+--  copy relative file path like: src/app/modules/Friends/friends.service.ts
 local function yank_relative_path()
 	local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
 	local file_abs = vim.fn.expand("%:p")

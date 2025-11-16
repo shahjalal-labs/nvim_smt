@@ -33,25 +33,6 @@ vim.keymap.set("n", "<leader>gy", copy_github_url, { desc = "Copy current repo G
 --p: ╰───────────── copy_github_url ─────────────╯
 
 --
---p: ╭──────────── show_github_contrib_today ────────────╮
-local function show_github_contrib_today()
-	local date = os.date("%Y-%m-%d")
-	local cmd = table.concat({
-		"gh api graphql -f query='query { viewer { contributionsCollection { contributionCalendar { weeks { contributionDays { date contributionCount } } } } } }' | jq -r '.data.viewer.contributionsCollection.contributionCalendar.weeks[] | .contributionDays[] | select(.date == \""
-			.. date
-			.. '") | "📆 \\(.date): 🔥 \\(.contributionCount) contributions"\'',
-	}, " ")
-
-	vim.cmd("vsplit | terminal " .. cmd)
-end
-
-vim.keymap.set("n", "<leader>gg", show_github_contrib_today, {
-	noremap = true,
-	silent = true,
-	desc = "📈 Show today's GitHub contributions",
-})
-
---p: ╰───────────── show_github_contrib_today─────────────╯
 --
 --
 --p: ╭──────────── enhanced_github_contributions ────────────╮
@@ -258,3 +239,29 @@ vim.keymap.set("n", "<leader>gz", enhanced_github_contributions, {
 })
 
 --p: ╰──────────── enhanced_github_contributions ────────────╯
+
+--p: ╭──────────── show_github_contrib_today ────────────╮
+local function show_github_contrib_today()
+	local date = os.date("%Y-%m-%d")
+	local cmd = table.concat({
+		"gh api graphql -f query='query { viewer { contributionsCollection { contributionCalendar { weeks { contributionDays { date contributionCount } } } } } }' | jq -r '.data.viewer.contributionsCollection.contributionCalendar.weeks[] | .contributionDays[] | select(.date == \""
+			.. date
+			.. '") | "📆 \\(.date): 🔥 \\(.contributionCount) contributions"\'',
+	}, " ")
+
+	vim.cmd("vsplit | terminal " .. cmd)
+
+	-- Add keymap to close terminal with 'q'
+	vim.cmd([[
+		tnoremap <buffer> q <C-\><C-n>:q!<CR>
+		nmap <buffer> q :q!<CR>
+	]])
+end
+
+vim.keymap.set("n", "<leader>gg", show_github_contrib_today, {
+	noremap = true,
+	silent = true,
+	desc = "📈 Show today's GitHub contributions",
+})
+
+--p: ╰───────────── show_github_contrib_today─────────────╯
