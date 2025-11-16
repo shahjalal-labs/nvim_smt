@@ -314,9 +314,9 @@ vim.keymap.set(
 
 --w:(End)╰───────────── create git repo and push to github ─────────────╯
 
--- ╭───────────── Block Start ─────────────╮
---t: git push from neovim
-function GitPushFromNvim()
+--w: (start)╭──────────── GitPushFromNvimCommitPrompting ────────────╮
+--t: git push from neovim with custom commit message prompting
+function GitPushFromNvimCommitPrompting()
 	-- Prompt for commit message
 	local commit_message = vim.fn.input("Enter commit message: ")
 
@@ -331,10 +331,15 @@ function GitPushFromNvim()
 	vim.cmd("!git commit -m '" .. commit_message .. "'")
 	vim.cmd("!git push")
 end
-vim.api.nvim_set_keymap("n", "<space>aj", ":lua GitPushFromNvim()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap(
+	"n",
+	"<space>aj",
+	":lua GitPushFromNvimCommitPrompting()<CR>",
+	{ noremap = true, silent = true }
+)
 
--- ╰───────────── Block End ───────────────╯
-
+--w: (end)  ╰──────────── GitPushFromNvimCommitPrompting ────────────╯
+--
 -- ╭──────────── Block Start ────────────╮
 -- STEP 1: Generate smart commit message with file filtering
 -- local function generate_git_summary()
@@ -424,9 +429,8 @@ vim.api.nvim_set_keymap("n", "<space>aj", ":lua GitPushFromNvim()<CR>", { norema
 --
 -- -- ╰───────────── Block End ─────────────╯
 
--- ╭──────────── Block Start ────────────╮
---w: 29/11/2024 06:50 PM Fri GMT+6 Sharifpur, Gazipur, Dhaka
---p: run git remote -v from neovim , dynamically selec the tmux pane number
+--w: (start)╭──────────── RunGitRemoteInTmuxPane ────────────╮
+--p: run git remote -v from neovim , dynamically select the tmux pane number
 function RunGitRemoteInTmuxPane()
 	-- Prompt the user for the tmux pane number
 	local pane_number = vim.fn.input("Enter the tmux pane number: "):gsub("%s+", "")
@@ -457,10 +461,11 @@ function RunGitRemoteInTmuxPane()
 	-- Notify the user
 	vim.notify("Ran `git remote -v` in tmux pane " .. pane_number, vim.log.levels.INFO)
 end
-
 -- Bind the function to a key combination
 vim.keymap.set("n", "<leader>ar", RunGitRemoteInTmuxPane, { desc = "Run `git remote -v` in specified tmux pane" })
--- ╰───────────── Block End ─────────────╯
+
+--w: (end)  ╰──────────── RunGitRemoteInTmuxPane ────────────╯
+
 --
 --
 -- ╭──────────── Block Start ────────────╮
@@ -578,9 +583,5 @@ vim.api.nvim_create_user_command("GhCloneTmuxView", function()
 end, {})
 
 vim.keymap.set("n", "<leader>ga", ":GhCloneTmuxView<CR>", { desc = "Clone GitHub repo and open in tmux async" })
-
---w: ╰───────────── Block End ─────────────╯
-
---w: ╭──────────── Block Start ────────────╮
 
 --w: ╰───────────── Block End ─────────────╯

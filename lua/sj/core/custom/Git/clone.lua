@@ -1,3 +1,4 @@
+--w: (start)╭──────────── clone_github_raw_to_current_dir ────────────╮
 local function clone_github_raw_to_current_dir()
 	-- 📋 Step 1: Get GitHub URL from clipboard
 	local github_url = vim.fn.getreg("+") -- + means system clipboard
@@ -29,3 +30,4 @@ end
 vim.keymap.set("n", "<leader>gf", clone_github_raw_to_current_dir, {
 	desc = "📥 Clone GitHub File from Clipboard into Current File's Directory",
 })
+--w: (end)  ╰──────────── clone_github_raw_to_current_dir ────────────╯
