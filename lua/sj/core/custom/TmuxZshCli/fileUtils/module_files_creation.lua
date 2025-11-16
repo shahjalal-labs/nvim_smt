@@ -1,5 +1,7 @@
 -- In your Neovim config (e.g. ~/.config/nvim/lua/keymaps.lua)
 
+--w: (start)╭──────────── Make module files from clipboard  ────────────╮
+--usage: copy any module name to clipboard, then hit key bind=> full module files will be created at /src/app/modules/module.service.ts,module.controller.ts etc
 vim.keymap.set("n", "<leader>fg", function()
 	-- Get clipboard content
 	local clipboard = vim.fn.getreg("+"):gsub("%s+", "")
@@ -50,3 +52,4 @@ vim.keymap.set("n", "<leader>fg", function()
 		end
 	end
 end, { desc = "Make module files from clipboard" })
+--w: (end)  ╰────────────  Make module files from clipboard  ────────────╯

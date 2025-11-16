@@ -28,9 +28,7 @@
 │       │   │   │   │   ├── github2.lua
 │       │   │   │   │   ├── github.lua
 │       │   │   │   │   └── init.lua
-│       │   │   │   ├── github2.lua
 │       │   │   │   ├── githubDescription.lua
-│       │   │   │   ├── github.lua
 │       │   │   │   ├── githubRepo
 │       │   │   │   │   └── gitRepoGeneratePush.lua
 │       │   │   │   ├── githubRepoGenerateAndPush.lua
@@ -154,6 +152,6 @@
 ├── README.md
 └── structure.md
 
-20 directories, 132 files
+20 directories, 130 files
 
 ```
