@@ -28,7 +28,7 @@ end, { desc = "Open current file in browser (firefox/chrome)" })
 
 --w: 1╰───────────── Open current file in browser ─────────────╯
 --
---w: 2╭──────────── Block Start ────────────╮
+--w: 2╭──────────── copy relative file path ────────────╮
 --  copy relative file path like: src/app/modules/Friends/friends.service.ts
 local function yank_relative_path()
 	local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
@@ -54,10 +54,10 @@ vim.keymap.set("n", "<leader>sr", yank_relative_path, {
 	desc = "Yank current file's relative path to clipboard",
 })
 
---w: 2╰───────────── Block End ─────────────╯
+--w: 2╰───────────── copy relative file path ─────────────╯
 
 --
---w: 3╭──────────── Block Start ────────────╮
+--w: 3╭──────────── copy absolute file path ────────────╮
 --t:copy the absolute path of the current file in Neovim using space sj
 vim.api.nvim_set_keymap("n", "<space>sj", ":lua CopyAbsolutePath()<CR>", { noremap = true, silent = true })
 
@@ -66,11 +66,11 @@ function CopyAbsolutePath()
 	vim.fn.setreg("+", file_path) -- Copy the path to the system clipboard
 	print("Copied path: " .. file_path)
 end
---w: 3╰───────────── Block End ─────────────╯
+--w: 3╰───────────── copy absolute file path ─────────────╯
 --
 --
 --
---w: 4╭──────────── Block Start ────────────╮
+--w: 4(start)╭──────────── create project structure.md ────────────╮
 -- Generate clean directory tree markdown with clipboard and open
 local function generate_structure_md()
 	local cwd = vim.fn.getcwd()
@@ -113,61 +113,9 @@ vim.keymap.set("n", "<leader>ds", generate_structure_md, {
 	silent = true,
 	desc = "🗂️ Generate structure.md and copy",
 })
---w: 4╰───────────── Block End ─────────────╯
+--w: 4(end)╰───────────── create project structure.md ─────────────╯
 
 --w: 5╭──────────── Block Start ────────────╮
---
---[[ local function generate_app_url()
-	-- Get current file path
-	local file_path = vim.fn.expand("%:p") -- full path
-
-	-- Find the 'src/app' folder in the path
-	local app_index = file_path:find("src[/\\]app")
-	if not app_index then
-		print("Not an app file!")
-		return
-	end
-
-	-- Extract relative path inside src/app
-	local relative_path = file_path:sub(app_index + 8) -- skip 'src/app'
-	relative_path = relative_path:gsub("[/\\]", "/") -- normalize slashes
-
-	-- ✅ Case 1: API file (keep original logic untouched)
-	local api_index = file_path:find("src[/\\]app[/\\]api")
-	if api_index then
-		relative_path = file_path:sub(api_index + 8) -- skip 'src/app'
-		relative_path = relative_path:gsub("[/\\]route%.[jt]s$", "") -- remove '/route.js' or '/route.ts'
-		relative_path = relative_path:gsub("[/\\]", "/") -- normalize slashes
-		relative_path = relative_path:gsub("%[([%w_]+)%]", ":%1") -- [id] -> :id
-
-		local url = "http://localhost:3000/" .. relative_path
-		print(url)
-		vim.fn.setreg("+", url)
-		return
-	end
-
-	-- ✅ Case 2: Page file
-	if relative_path:match("/page%.[jt]sx?$") then
-		relative_path = relative_path:gsub("/page%.[jt]sx?$", "") -- remove '/page.js/tsx'
-		relative_path = relative_path:gsub("%[([%w_]+)%]", ":%1") -- [id] -> :id
-		if relative_path == "" then
-			relative_path = "/"
-		end
-		print(relative_path)
-		vim.fn.setreg("+", relative_path)
-		return
-	end
-
-	print("Not an API or page file!")
-end
-
--- Map to leader + rp
-vim.keymap.set("n", "<leader>rp", generate_app_url, {
-	noremap = true,
-	silent = true,
-	desc = "🌐 Generate localhost API/Page URL and copy",
-}) ]]
-
 -- updaed for ignore group routes
 local function generate_app_url()
 	-- Get current file path

@@ -36,6 +36,7 @@ vim.keymap.set("n", "<leader>fg", function()
 		filebase .. ".service.ts",
 		filebase .. ".routes.ts",
 		filebase .. ".validation.ts",
+		filebase .. ".api.hurl",
 	}
 
 	-- Create files if missing
