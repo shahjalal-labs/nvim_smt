@@ -187,6 +187,8 @@ vim.api.nvim_set_keymap("i", "<space>jk", "type Name= ;<Esc>bb viwc", { noremap 
 --
 --
 --w: change_current_window_panes_to_project_root function as a global function
+--w: (start)╭────────────  ────────────╮
+-- resize with predefined tmux pane, cd other panes to nvim project root and
 function _G.change_current_window_panes_to_project_root()
 	-- Step 1: Get current working directory in Neovim
 	local project_root = vim.fn.getcwd()
@@ -218,6 +220,8 @@ vim.api.nvim_set_keymap(
 	":lua change_current_window_panes_to_project_root()<CR>",
 	{ noremap = true, silent = true }
 )
+--w: (end)  ╰────────────  ────────────╯
+
 --
 --
 -- by go starting of the line and press a space
@@ -256,10 +260,8 @@ vim.keymap.set("n", "<space>ac", CopyGitRemote, { desc = "Copy git remote URL to
 --
 --
 --
--- Universal to camelCase converter
--- Convert any text format to camelCase
 --w: (start)╭──────────── to_camel_case ────────────╮
---take clipboard text & Convert  format to camelCase and paste to the cursor position
+-- Convert clipboard text to camelCase and paste
 local function to_camel_case(str)
 	-- Replace separators with space
 	str = str:gsub("[%-%._/]", " ")
@@ -297,8 +299,20 @@ local function paste_camel_insert()
 	vim.api.nvim_put({ camel }, "c", true, true)
 end
 
--- Map in both modes
-vim.keymap.set("n", "<leader>uc", paste_camel_normal, { noremap = true, silent = true })
-vim.keymap.set("i", "<leader>uc", paste_camel_insert, { noremap = true, silent = true })
+-- map with leader uc, normal mode
+vim.keymap.set(
+	"n",
+	"<leader>uc",
+	paste_camel_normal,
+	{ noremap = true, silent = true, desc = "Convert clipboard text to camelCase and paste" }
+)
+
+-- map with leader uc, insert mode
+vim.keymap.set(
+	"i",
+	"<leader>uc",
+	paste_camel_insert,
+	{ noremap = true, silent = true, desc = "Convert clipboard text to camelCase and paste" }
+)
 
 --w: (end)  ╰──────────── to_camel_case ────────────╯
