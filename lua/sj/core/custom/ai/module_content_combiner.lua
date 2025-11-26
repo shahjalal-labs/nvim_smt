@@ -165,3 +165,49 @@ vim.keymap.set("n", "<leader>g,", function()
 
 	vim.notify("✅ Generated: " .. output_file .. " and copied to clipboard! 🚀", vim.log.levels.INFO)
 end, { desc = "Generate full module content file and copy to clipboard" })
+
+--w: (start)╭──────────── fullprojectcopy  ────────────╮
+
+local M = {}
+
+M.export_project = function()
+  local root = "/home/sj/web/learning/sangam"
+  local project = vim.fn.fnamemodify(root, ":t")
+  local outfile = "/home/sj/web/learning/fullContent_" .. project .. ".txt"
+
+  local cmd = {
+    "fd",
+    "--type", "f",
+    "--hidden",
+    "--exclude", "node_modules",
+    "--exclude", ".git",
+    "--exclude", "*.log",
+    "--exclude", "*.lock",
+    "--exclude", ".env*",
+    "--exclude", "dist",
+    "--exclude", "build",
+    "--exclude", ".cache",
+    "--exclude", "*.png", "--exclude", "*.jpg", "--exclude", "*.jpeg",
+    "--exclude", "*.pdf", "--exclude", "*.exe",
+    root
+  }
+
+  local files = vim.fn.systemlist(cmd)
+
+  local content = {}
+  for _, f in ipairs(files) do
+    table.insert(content, ("--- %s ---"):format(f))
+    vim.list_extend(content, vim.fn.readfile(f))
+    table.insert(content, "") -- blank line between files
+  end
+
+  vim.fn.writefile(content, outfile)
+
+  vim.cmd("edit " .. outfile)
+  vim.cmd("%y+")
+end
+
+vim.keymap.set("n", "<leader>g.", M.export_project, { silent = true })
+
+return M
+--w: (end)  ╰──────────── fullprojectcopy  ────────────╯
