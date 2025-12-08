@@ -1,29 +1,69 @@
--- ~/.config/nvim/lua/sj/core/custom/ai/dbee.lua
 return {
 	"kndndrj/nvim-dbee",
-	dependencies = { "nvim-lua/plenary.nvim" },
+	dependencies = {
+		"MunifTanjim/nui.nvim",
+	},
+	build = function()
+		-- Build the binary if needed
+		require("dbee").install()
+	end,
 	config = function()
-		local db = require("dbee")
+		local dbee = require("dbee")
 
-		-- Example Postgres connection
-
-		db.setup({
-			connections = {
-				local_pg = {
-					driver = "postgres",
-					url = "postgres://postgres:sj@localhost:5432/postgre-basics",
+		-- Initialize with minimal config
+		dbee.setup({
+			-- UI configuration
+			ui = {
+				window = {
+					width = 0.85, -- 85% of screen width
+					height = 0.85, -- 85% of screen height
 				},
+				-- Use minimal UI without unnecessary elements
+				layout = "default",
 			},
-			default_connection = "local_pg",
+			-- Sources: Define your database connections here
+			sources = {
+				-- Example: PostgreSQL
+				-- {
+				--   name = "Local PostgreSQL",
+				--   type = "postgresql",
+				--   url = "postgresql://user:pass@localhost:5432/dbname",
+				-- },
+			},
 		})
 
-		local opts = { noremap = true, silent = true }
+		-- Key mappings (minimal but powerful)
+		vim.keymap.set("n", "<leader>do", dbee.open, { desc = "DBee: Open UI" })
+		vim.keymap.set("n", "<leader>dc", dbee.close, { desc = "DBee: Close UI" })
+		vim.keymap.set("n", "<leader>dt", dbee.toggle, { desc = "DBee: Toggle UI" })
 
-		-- Keymaps prefixed with <leader>D
-		vim.api.nvim_set_keymap("n", "<leader>DC", "<cmd>DBEEConnect<CR>", opts) -- Connect
-		vim.api.nvim_set_keymap("n", "<leader>DD", "<cmd>DBEEDisconnect<CR>", opts) -- Disconnect
-		vim.api.nvim_set_keymap("n", "<leader>DT", "<cmd>DBEETables<CR>", opts) -- List Tables
-		vim.api.nvim_set_keymap("n", "<leader>DQ", "<cmd>DBEEQuery<CR>", opts) -- Run Query
-		vim.api.nvim_set_keymap("n", "<leader>DR", "<cmd>DBEEResults<CR>", opts) -- Toggle Results
+		-- Quick execution commands (when UI is open)
+		vim.keymap.set("n", "<leader>dx", function()
+			-- Execute current query (when in SQL buffer)
+			if vim.bo.filetype == "sql" then
+				dbee.execute(vim.fn.line("."), vim.fn.line("."))
+			else
+				vim.notify("Not in SQL buffer", vim.log.levels.WARN)
+			end
+		end, { desc = "DBee: Execute current line" })
+
+		vim.keymap.set("v", "<leader>dx", function()
+			-- Execute visual selection
+			if vim.bo.filetype == "sql" then
+				local start_line = vim.fn.line("v")
+				local end_line = vim.fn.line(".")
+				dbee.execute(start_line, end_line)
+			else
+				vim.notify("Not in SQL buffer", vim.log.levels.WARN)
+			end
+		end, { desc = "DBee: Execute visual selection" })
+
+		-- Quick connection management
+		vim.keymap.set("n", "<leader>AA", dbee.add_source, { desc = "DBee: Add connection" })
+		vim.keymap.set("n", "<leader>AL", dbee.list_sources, { desc = "DBee: List connections" })
+
+		-- Query history navigation
+		vim.keymap.set("n", "<leader>AN", dbee.next_history, { desc = "DBee: Next query" })
+		vim.keymap.set("n", "<leader>AP", dbee.prev_history, { desc = "DBee: Previous query" })
 	end,
 }
