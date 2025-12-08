@@ -15,6 +15,7 @@ return {
 		"rafamadriz/friendly-snippets", -- useful snippets
 		"onsails/lspkind.nvim", -- vs-code like pictograms
 		"hrsh7th/cmp-emoji",
+		"kristijanhusak/vim-dadbod-completion",
 	},
 	config = function()
 		local cmp = require("cmp")
@@ -51,6 +52,7 @@ return {
 				{ name = "buffer" }, -- text within current buffer
 				{ name = "path" }, -- file system paths
 				{ name = "emoji" }, -- file system paths
+				{ name = "vim-dadbod-completion" }, -- Add this line
 				-- { name = "supermaven" }, -- file system paths
 			}),
 

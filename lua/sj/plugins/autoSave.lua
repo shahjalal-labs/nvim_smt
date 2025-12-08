@@ -1,35 +1,4 @@
---[[ return {
-
-	"okuuva/auto-save.nvim",
-	version = "^1.0.0", -- see https://devhints.io/semver, alternatively use '*' to use the latest tagged release
-	cmd = "ASToggle", -- optional for lazy loading on command
-	event = { "TextChanged" }, -- optional for lazy loading on trigger events
-	opts = {
-		-- your config goes here
-		-- or just leave it empty :)
-		debounce_delay = 295,
-		-- trigger_events = { "TextChanged" },
-	},
-} ]]
-
---p: added from linkarzu
--- https://github.com/okuuva/auto-save.nvim
---
--- This is a fork of original plugin `https://github.com/pocco81/auto-save.nvim`
--- but the original one was updated 2 years ago, and I was experiencing issues
--- with autoformat and undo/redo
---
--- Filename: ~/github/dotfiles-latest/neovim/neobean/lua/plugins/autoSave.lua
--- ~/github/dotfiles-latest/neovim/neobean/lua/plugins/autoSave.lua
-
--- My related YouTube video
--- Save neovim files automatically with auto-save.nvim
--- https://youtu.be/W5fjlU4tSpw
-
--- I had undo/redo issues when using the no longer maintained plugin from pocco81
--- So make sure you're using the right plugin, which is okuuva/auto-save.nvim
--- https://github.com/pocco81/auto-save.nvim/issues/70
-
+-- ~/.config/nvim/lua/sj/plugins/autoSave.lua
 -- Autocommand for printing the autosaved message
 local group = vim.api.nvim_create_augroup("autosave", {})
 vim.api.nvim_create_autocmd("User", {
@@ -117,6 +86,42 @@ vim.api.nvim_create_autocmd("BufLeave", {
 	end,
 })
 
+-- ============ ADD THESE NEW AUTOCMDS FOR DAD BOD ============
+-- Detect and exclude Dad Bod buffers
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "dbout",
+	group = group,
+	callback = function()
+		vim.api.nvim_exec_autocmds("User", { pattern = "DadBodBufferEnter" })
+	end,
+})
+
+vim.api.nvim_create_autocmd("BufWinEnter", {
+	group = group,
+	pattern = "*",
+	callback = function(opts)
+		local bufname = vim.fn.bufname(opts.buf)
+		-- Pattern for Dad Bod query result buffers (has timestamps)
+		if bufname:match(".*%d%d%d%d%-%d%d%-%d%d%-%d%d%-%d%d%-%d%d") then
+			vim.api.nvim_exec_autocmds("User", { pattern = "DadBodBufferEnter" })
+		end
+	end,
+})
+
+-- Re-enable auto-save when leaving Dad Bod buffers
+vim.api.nvim_create_autocmd("BufLeave", {
+	group = group,
+	pattern = "*",
+	callback = function(opts)
+		local bufname = vim.fn.bufname(opts.buf)
+		local ft = vim.bo[opts.buf].filetype
+		if ft == "dbout" or bufname:match(".*%d%d%d%d%-%d%d%-%d%d%-%d%d%-%d%d%-%d%d") then
+			vim.api.nvim_exec_autocmds("User", { pattern = "DadBodBufferLeave" })
+		end
+	end,
+})
+-- ============ END DAD BOD AUTOCMDS ============
+
 return {
 	{
 		"okuuva/auto-save.nvim",
@@ -134,6 +139,7 @@ return {
 					{ "User", pattern = "FlashJumpEnd" },
 					{ "User", pattern = "SnacksInputLeave" },
 					{ "User", pattern = "SnacksPickerInputLeave" },
+					{ "User", pattern = "DadBodBufferLeave" }, -- Add this
 				},
 				cancel_deferred_save = {
 					"InsertEnter",
@@ -141,6 +147,7 @@ return {
 					{ "User", pattern = "FlashJumpStart" },
 					{ "User", pattern = "SnacksInputEnter" },
 					{ "User", pattern = "SnacksPickerInputEnter" },
+					{ "User", pattern = "DadBodBufferEnter" }, -- Add this
 				},
 			},
 			condition = function(buf)
@@ -150,13 +157,31 @@ return {
 				end
 
 				local filetype = vim.bo[buf].filetype
-				if filetype == "harpoon" or filetype == "mysql" then
+				-- Add 'dbout' to the excluded filetypes
+				if filetype == "harpoon" or filetype == "mysql" or filetype == "dbout" then
 					return false
 				end
 
 				-- Skip autosave if you're in an active snippet
 				local ok_snip, luasnip = pcall(require, "luasnip")
 				if ok_snip and luasnip.in_snippet() then
+					return false
+				end
+
+				-- Check for Dad Bod query result buffers by name pattern
+				local bufname = vim.fn.bufname(buf)
+				-- Pattern for Dad Bod timestamps: 2025-12-08-21-53-15
+				if bufname:match(".*%d%d%d%d%-%d%d%-%d%d%-%d%d%-%d%d%-%d%d") then
+					return false
+				end
+
+				-- Check for other Dad Bod patterns
+				if
+					bufname:match("^query%-")
+					or bufname:match("^.*%-Columns%-")
+					or bufname:match("^.*%-Indexes%-")
+					or bufname:match("^.*%-References%-")
+				then
 					return false
 				end
 

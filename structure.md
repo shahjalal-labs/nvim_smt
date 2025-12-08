@@ -74,7 +74,9 @@
 │       │   │       │   ├── init.lua
 │       │   │       │   └── module_files_creation.lua
 │       │   │       ├── init.lua
-│       │   │       ├── nvimTerminal.lua
+│       │   │       ├── Terminal
+│       │   │       │   ├── init.lua
+│       │   │       │   └── nvimTerminal.lua
 │       │   │       ├── tmuxCommandSender.lua
 │       │   │       ├── tmuxPaneContent.lua
 │       │   │       ├── tmuxZsh2.lua
@@ -97,6 +99,7 @@
 │           ├── comment.lua
 │           ├── copilotChat.lua
 │           ├── cursor-line.lua
+│           ├── dad_bod.lua
 │           ├── dressing.lua
 │           ├── emoji.lua
 │           ├── error-lens.lua
@@ -139,11 +142,11 @@
 │           ├── time_tracker.lua
 │           ├── tiny_glimmer.lua
 │           ├── todo-comments.lua
-│           ├── toggleTerm.lua
 │           ├── treesitter.lua
 │           ├── trouble.lua
 │           ├── twilight.lua
 │           ├── vim-maximizer.lua
+│           ├── web_socket.lua
 │           ├── web-tools.lua
 │           ├── which-key.lua
 │           ├── yanky.lua
@@ -152,6 +155,6 @@
 ├── README.md
 └── structure.md
 
-20 directories, 130 files
+21 directories, 132 files
 
 ```
