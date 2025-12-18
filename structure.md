@@ -100,6 +100,7 @@
 │           ├── copilotChat.lua
 │           ├── cursor-line.lua
 │           ├── dad_bod.lua
+│           ├── dbee.lua
 │           ├── dressing.lua
 │           ├── emoji.lua
 │           ├── error-lens.lua
@@ -155,6 +156,6 @@
 ├── README.md
 └── structure.md
 
-21 directories, 132 files
+21 directories, 133 files
 
 ```
