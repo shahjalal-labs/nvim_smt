@@ -152,10 +152,9 @@
 │           ├── which-key.lua
 │           ├── yanky.lua
 │           └── yazi.lua
-├── readmeGenerateFull.md
 ├── README.md
 └── structure.md
 
-21 directories, 133 files
+21 directories, 132 files
 
 ```
