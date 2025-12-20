@@ -287,7 +287,7 @@ vim.api.nvim_set_keymap("v", "<leader>sg", ":<C-u>lua search_google_selection()<
 --
 --w: ╭──────────── Block Start ────────────╮
 -- Create new job description prompt with auto-incremented Tracker number
-vim.keymap.set("n", "<leader>pj", function()
+vim.keymap.set("n", "<leader>pc", function()
 	local jobdir = "/run/media/sj/developer/web/L1B11/career/JobDocuments/jobDescription/"
 	local tracker_path = "/run/media/sj/developer/web/L1B11/career/JobDocuments/Tracker/Tracker.md"
 	local base = jobdir .. "jd"
