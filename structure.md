@@ -61,6 +61,9 @@
 │       │   │   │   └── wordExplain.lua
 │       │   │   ├── normalModeInInrsert.lua
 │       │   │   ├── others.lua
+│       │   │   ├── pane_window
+│       │   │   │   ├── init.lua
+│       │   │   │   └── pane.lua
 │       │   │   └── TmuxZshCli
 │       │   │       ├── build.lua
 │       │   │       ├── fileUtils
@@ -94,6 +97,7 @@
 │           ├── blammer.lua
 │           ├── bufferline.lua
 │           ├── chatgpt.lua
+│           ├── colorful-winsep.lua
 │           ├── colorscheme.lua
 │           ├── comfy-line-numbers.lua
 │           ├── comment.lua
@@ -150,11 +154,12 @@
 │           ├── web_socket.lua
 │           ├── web-tools.lua
 │           ├── which-key.lua
+│           ├── winshift.lua
 │           ├── yanky.lua
 │           └── yazi.lua
 ├── README.md
 └── structure.md
 
-21 directories, 132 files
+22 directories, 136 files
 
 ```
