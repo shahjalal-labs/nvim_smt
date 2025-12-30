@@ -1,3 +1,51 @@
+local function run_hurl_block()
+	local bufnr = vim.api.nvim_get_current_buf()
+	local cursor = vim.api.nvim_win_get_cursor(0)
+	local cur_line = cursor[1]
+	local total = vim.api.nvim_buf_line_count(bufnr)
+
+	local start_line = nil
+	local end_line = nil
+
+	-- Find block start (search upward)
+	for i = cur_line, 1, -1 do
+		local line = vim.api.nvim_buf_get_lines(bufnr, i - 1, i, false)[1]
+		if line:match("^#%s+") then
+			start_line = i
+			break
+		end
+	end
+
+	if not start_line then
+		vim.notify("No Hurl block start found", vim.log.levels.WARN)
+		return
+	end
+
+	-- Find block end (next valid header)
+	for i = start_line + 1, total do
+		local line = vim.api.nvim_buf_get_lines(bufnr, i - 1, i, false)[1]
+		if line:match("^#%s+") then
+			end_line = i - 1
+			break
+		end
+	end
+
+	-- If last block
+	if not end_line then
+		end_line = total
+	end
+
+	-- Select the block
+	vim.cmd("normal! " .. start_line .. "GV" .. end_line .. "G")
+
+	-- Run Hurl
+	vim.cmd("HurlRunner")
+end
+
+vim.keymap.set("n", "<leader>th", run_hurl_block, {
+	desc = "Run current Hurl block",
+})
+
 return {
 	"jellydn/hurl.nvim",
 	dependencies = {
