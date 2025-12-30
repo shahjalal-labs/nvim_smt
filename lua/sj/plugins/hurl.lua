@@ -1,3 +1,9 @@
+-- Run the current Hurl request block from normal mode.
+-- Finds the nearest `# ` header as the start, the next `# ` as the end,
+-- ignores `#/` inline comments, selects the block automatically,
+-- and runs `:HurlRunner` without manual visual selection.
+
+--w: (start)╭──────────── run_hurl_block ────────────╮
 local function run_hurl_block()
 	local bufnr = vim.api.nvim_get_current_buf()
 	local cursor = vim.api.nvim_win_get_cursor(0)
@@ -38,13 +44,18 @@ local function run_hurl_block()
 	-- Select the block
 	vim.cmd("normal! " .. start_line .. "GV" .. end_line .. "G")
 
-	-- Run Hurl
-	vim.cmd("HurlRunner")
+	-- -- Run Hurl
+	-- vim.cmd("HurlRunner")
 end
 
 vim.keymap.set("n", "<leader>th", run_hurl_block, {
 	desc = "Run current Hurl block",
 })
+
+vim.keymap.set("n", "t", run_hurl_block, {
+	desc = "Run current Hurl block",
+})
+--w: (end)  ╰──────────── run_hurl_block ────────────╯
 
 return {
 	"jellydn/hurl.nvim",
@@ -106,6 +117,6 @@ return {
 		{ "<leader>hV", "<cmd>HurlVeryVerbose<CR>", desc = "Run Api in very verbose mode" },
 		-- Run Hurl request in visual mode
 		{ "<leader>h", ":HurlRunner<CR>", desc = "Hurl Runner", mode = "v" },
-		{ "a", ":HurlRunner<CR>", desc = "Hurl Runner", mode = "v" },
+		{ "t", ":HurlRunner<CR>", desc = "Hurl Runner", mode = "v" },
 	},
 }
