@@ -7,8 +7,8 @@ return {
 		-- I'm switching over to mini.files (mini-files.lua) because neotree had
 		-- some issues for me, when renaming files or directories sometimes they
 		-- didn't update so had to be using oil.nvim
-		enabled = true,
-		-- enabled = false,
+		-- enabled = true,
+		enabled = false,
 		lazy = "very",
 		event = "VeryLazy",
 		keys = {
@@ -122,7 +122,6 @@ return {
 						end)
 					end,
 				},
-				-- ###################################################################
 			},
 		},
 	},
