@@ -1,66 +1,62 @@
--- ~/.config/nvim/lua/sj/core/custom/CustomMode/surfingKesy.lua
+```lua
+-- Add to your surfingKesy.lua
+-- Ensure flash is loaded; if not, require it here
+local flash = require("flash")
 
-local M = {}
+-- Custom yank word with hints
+vim.keymap.set({ "n", "x", "o" }, "<leader>yw", function()
+  flash.jump({
+    pattern = "\\<\\w\\+\\>", -- Match words
+    search = { mode = "search", max_length = 0 }, -- Hint all matches
+    action = function(match, state)
+      vim.api.nvim_win_set_cursor(match.win, match.pos)
+      vim.cmd("normal! yiw") -- Yank inner word
+      state:restore() -- Return to original position
+    end,
+    jump = { pos = "start" }, -- Jump to start for yank
+  })
+end, { desc = "Yank word with hints" })
 
-------------------------------------------------------------
--- Highlight groups (safe to define early)
-------------------------------------------------------------
-vim.api.nvim_set_hl(0, "SurfWordHint", {
-	fg = "#000000",
-	bg = "#a6e3a1",
-	bold = true,
-})
+-- Custom yank line with hints
+vim.keymap.set({ "n", "x", "o" }, "<leader>yl", function()
+  flash.jump({
+    pattern = "^",
+    action = function(match, state)
+      vim.api.nvim_win_set_cursor(match.win, match.pos)
+      vim.cmd("normal! yy") -- Yank entire line
+      state:restore()
+    end,
+  })
+end, { desc = "Yank line with hints" })
 
-------------------------------------------------------------
--- Helper: yank word at position without moving cursor
-------------------------------------------------------------
-local function yank_word_at(pos)
-	local win = vim.api.nvim_get_current_win()
+-- Custom yank block/paragraph with hints (basic, non-Tree-sitter)
+vim.keymap.set({ "n", "x", "o" }, "<leader>yb", function()
+  flash.jump({
+    pattern = ".", -- General pattern to hint visible positions
+    search = { mode = "search" },
+    action = function(match, state)
+      vim.api.nvim_win_set_cursor(match.win, match.pos)
+      vim.cmd("normal! yap") -- Yank around paragraph/block
+      state:restore()
+    end,
+  })
+end, { desc = "Yank block with hints" })
 
-	local original_cursor = vim.api.nvim_win_get_cursor(win)
+-- Custom yank Tree-sitter block with hints
+vim.keymap.set({ "n", "x", "o" }, "<leader>yt", function()
+  flash.treesitter_search({
+    remote_op = { restore = true, motion = true },
+    action = function(match, state)
+      -- Yank the Tree-sitter node
+      vim.cmd("normal! yit") -- Yank inner Tree-sitter node (adjust 'it' as needed)
+      state:restore()
+    end,
+  })
+end, { desc = "Yank Tree-sitter block with hints" })
 
-	-- Flash gives 1-based row, 0-based col → fine for set_cursor
-	vim.api.nvim_win_set_cursor(win, { pos[1], pos[2] })
-
-	vim.cmd("normal! yiw")
-
-	vim.api.nvim_win_set_cursor(win, original_cursor)
-end
-
-------------------------------------------------------------
--- SurfingKeys-style WORD copy mode (yv)
-------------------------------------------------------------
-function M.copy_word_by_hint()
-	-- 🔑 require INSIDE function (lazy-safe)
-	local flash = require("flash")
-
-	flash.jump({
-		search = {
-			mode = "search",
-			max_length = 0,
-		},
-
-		label = {
-			uppercase = false,
-			rainbow = false,
-		},
-
-		highlight = {
-			matches = false,
-			label = "SurfWordHint",
-		},
-
-		action = function(match)
-			yank_word_at(match.pos)
-		end,
-	})
-end
-
-------------------------------------------------------------
--- Keymap (safe: function wrapper delays require)
-------------------------------------------------------------
-vim.keymap.set("n", "yv", function()
-	M.copy_word_by_hint()
-end, { desc = "SurfingKeys: copy word by hint" })
-
-return M
+-- Optional: Customize label colors (add to your highlight setup or here)
+vim.api.nvim_set_hl(0, "FlashLabel", { fg = "#ff00ff", bold = true }) -- Base color
+-- For type-specific colors, you can override in each jump config if needed, e.g.:
+-- In yw: label = { rainbow = { enabled = true, shade = 1 } } for blue-ish
+-- In yl: shade = 5 for green, etc.
+```
