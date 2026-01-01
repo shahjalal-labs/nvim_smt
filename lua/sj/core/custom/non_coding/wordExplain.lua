@@ -56,6 +56,10 @@ Give me a detailed word study of "]] .. word .. [[" with the following structure
 
     Word Family / Related Forms
 
+    Verb Conjugation Form
+       
+        With bangla meaning and bangla pronunciation
+
     Collocations / Common Phrases
 
     Example Sentences (3 levels: simple, medium, advanced)
