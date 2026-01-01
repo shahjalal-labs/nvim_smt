@@ -2,10 +2,8 @@
 
 local M = {}
 
-local flash = require("flash")
-
 ------------------------------------------------------------
--- Highlight groups (edit colors freely)
+-- Highlight groups (safe to define early)
 ------------------------------------------------------------
 vim.api.nvim_set_hl(0, "SurfWordHint", {
 	fg = "#000000",
@@ -14,39 +12,37 @@ vim.api.nvim_set_hl(0, "SurfWordHint", {
 })
 
 ------------------------------------------------------------
--- Internal helper: yank word at position without moving cursor
+-- Helper: yank word at position without moving cursor
 ------------------------------------------------------------
 local function yank_word_at(pos)
 	local win = vim.api.nvim_get_current_win()
-	local buf = vim.api.nvim_get_current_buf()
 
-	-- save cursor
 	local original_cursor = vim.api.nvim_win_get_cursor(win)
 
-	-- move cursor to hinted word
+	-- Flash gives 1-based row, 0-based col → fine for set_cursor
 	vim.api.nvim_win_set_cursor(win, { pos[1], pos[2] })
 
-	-- yank inner word
 	vim.cmd("normal! yiw")
 
-	-- restore cursor
 	vim.api.nvim_win_set_cursor(win, original_cursor)
 end
 
 ------------------------------------------------------------
--- Public: SurfingKeys-style word copy mode
+-- SurfingKeys-style WORD copy mode (yv)
 ------------------------------------------------------------
 function M.copy_word_by_hint()
+	-- 🔑 require INSIDE function (lazy-safe)
+	local flash = require("flash")
+
 	flash.jump({
 		search = {
 			mode = "search",
-			-- empty pattern = Flash auto word detection
 			max_length = 0,
 		},
 
 		label = {
-			rainbow = false,
 			uppercase = false,
+			rainbow = false,
 		},
 
 		highlight = {
@@ -54,15 +50,17 @@ function M.copy_word_by_hint()
 			label = "SurfWordHint",
 		},
 
-		action = function(match, _)
+		action = function(match)
 			yank_word_at(match.pos)
 		end,
 	})
 end
 
 ------------------------------------------------------------
--- OPTIONAL: default keymap (change or remove later)
+-- Keymap (safe: function wrapper delays require)
 ------------------------------------------------------------
-vim.keymap.set("n", "yv", M.copy_word_by_hint, { desc = "SurfingKeys: copy word by hint" })
+vim.keymap.set("n", "yv", function()
+	M.copy_word_by_hint()
+end, { desc = "SurfingKeys: copy word by hint" })
 
 return M
