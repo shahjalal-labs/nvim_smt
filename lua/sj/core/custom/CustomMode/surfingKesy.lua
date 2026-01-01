@@ -1,50 +1,52 @@
 -- Updated surfingKesy.lua
--- Fixes for line and Tree-sitter: Ensure labels show immediately for all visible matches
--- For lines: Use pattern matching non-empty lines, force labels with empty pattern trigger
--- For Tree-sitter: Add explicit label config and ensure action triggers properly
+-- Fixes: Disable prompt to avoid prompt.lua error; revert mode to "search" for regex patterns like '^'; add limit=100 to prevent too many matches/errors
+-- For Tree-sitter: If doing nothing, ensure Tree-sitter parser for 'prisma' is installed (e.g., via nvim-treesitter: add 'prisma' with custom repo https://github.com/victorhqc/tree-sitter-prisma)
+-- Adjust yank commands as needed (e.g., 'yiw' to 'yaw' for around word)
 
--- Custom yank word/token with hints (unchanged, as it works)
+-- Custom yank word/token with hints
 vim.keymap.set({ "n", "x", "o" }, "<leader>yw", function()
 	require("flash").jump({
 		pattern = "[^ \t\n\r]+", -- Match any non-whitespace sequences (better for code tokens)
 		search = {
-			mode = "search",
+			mode = "search", -- Use search for regex support
 			multi_window = false, -- Focus on current window for performance
-			max_length = false, -- No max length limit
-			incremental = false, -- Don't update incrementally
+			max_length = false,
+			incremental = false,
 		},
 		label = {
-			min_pattern_length = 0, -- Show labels even for empty/short patterns
-			distance = true, -- Prioritize closer labels
-			reuse = "all", -- Reuse labels intelligently
+			min_pattern_length = 0, -- Show labels immediately
+			distance = true,
+			reuse = "all",
 		},
 		jump = {
-			autojump = false, -- Don't jump automatically; wait for label input
+			autojump = false,
 			pos = "start",
 		},
+		prompt = { enabled = false }, -- Disable prompt to avoid set_lines error
+		limit = 100, -- Limit to 100 matches to prevent overload
 		action = function(match, state)
 			vim.api.nvim_win_set_cursor(match.win, match.pos)
-			vim.cmd("normal! yiw") -- Yank inner word (adjust to 'ye' if needed for end-inclusive)
-			state:restore() -- Return to original position
+			vim.cmd("normal! yiw") -- Yank inner word
+			state:restore()
 		end,
 	})
 end, { desc = "Yank word/token with hints" })
 
--- Custom yank line with hints (fixed: broader pattern for all line starts, force labels)
+-- Custom yank line with hints
 vim.keymap.set({ "n", "x", "o" }, "<leader>yl", function()
 	require("flash").jump({
-		pattern = "^", -- Match absolute line starts (including empty lines if needed)
+		pattern = "^", -- Match line starts (regex anchor)
 		search = {
-			mode = "exact", -- Use exact to avoid fuzzy, ensure all matches
+			mode = "search", -- Required for regex
 			multi_window = false,
 			max_length = false,
 			incremental = false,
-			wrap = false, -- Don't wrap to avoid duplicates
+			wrap = false,
 		},
 		label = {
-			min_pattern_length = 0, -- Force labels immediately without typing
-			after = { 0, 0 }, -- Position labels at line start
-			style = "overlay", -- Overlay for visibility
+			min_pattern_length = 0,
+			after = { 0, 0 }, -- Label at line start
+			style = "overlay",
 			reuse = "all",
 		},
 		highlight = { matches = true },
@@ -53,18 +55,20 @@ vim.keymap.set({ "n", "x", "o" }, "<leader>yl", function()
 			pos = "start",
 			offset = 0,
 		},
+		prompt = { enabled = false }, -- Disable prompt
+		limit = 100, -- Limit matches
 		action = function(match, state)
 			vim.api.nvim_win_set_cursor(match.win, match.pos)
-			vim.cmd("normal! 0y$") -- Yank from start to end of line (handles leading whitespace)
+			vim.cmd("normal! 0y$") -- Yank from col 0 to end
 			state:restore()
 		end,
 	})
 end, { desc = "Yank line with hints" })
 
--- Custom yank block/paragraph with hints (basic, uses paragraph motion)
+-- Custom yank block/paragraph with hints (basic Vim paragraph)
 vim.keymap.set({ "n", "x", "o" }, "<leader>yb", function()
 	require("flash").jump({
-		pattern = ".", -- Match any char to hint visible positions
+		pattern = ".", -- Match any char for positions
 		search = {
 			mode = "search",
 			multi_window = false,
@@ -73,26 +77,28 @@ vim.keymap.set({ "n", "x", "o" }, "<leader>yb", function()
 		},
 		label = { min_pattern_length = 0 },
 		jump = { autojump = false, pos = "start" },
+		prompt = { enabled = false },
+		limit = 100,
 		action = function(match, state)
 			vim.api.nvim_win_set_cursor(match.win, match.pos)
-			vim.cmd("normal! yap") -- Yank around paragraph (block separated by blank lines)
+			vim.cmd("normal! yap") -- Yank around paragraph
 			state:restore()
 		end,
 	})
 end, { desc = "Yank block with hints" })
 
--- Custom yank Tree-sitter block with hints (fixed: force labels on all visible nodes)
+-- Custom yank Tree-sitter block with hints
 vim.keymap.set({ "n", "x", "o" }, "<leader>yt", function()
 	require("flash").treesitter_search({
-		pattern = "", -- Empty pattern to match all Tree-sitter nodes
+		pattern = "", -- Empty for all nodes
 		search = {
 			multi_window = false,
 			incremental = false,
 			max_length = false,
-			mode = "exact",
+			mode = "search", -- Try search mode
 		},
 		label = {
-			min_pattern_length = 0, -- Show labels immediately for all nodes
+			min_pattern_length = 0,
 			before = true,
 			after = true,
 			style = "inline",
@@ -104,21 +110,21 @@ vim.keymap.set({ "n", "x", "o" }, "<leader>yt", function()
 		},
 		remote_op = { restore = true, motion = true },
 		jump = {
-			pos = "range", -- Highlight the range of the node
+			pos = "range",
 			autojump = false,
 		},
+		prompt = { enabled = false },
+		limit = 100, -- Limit nodes
 		action = function(match, state)
-			-- Set visual selection to the match range for yank
-			vim.api.nvim_win_set_cursor(match.win, match.from)
+			vim.api.nvim_win_set_cursor(match.win, { match.from[1], match.from[2] - 1 }) -- Adjust 1-based
 			vim.cmd("normal! v")
-			vim.api.nvim_win_set_cursor(match.win, match.to)
-			vim.cmd("normal! y") -- Yank the visual selection (Tree-sitter node)
-			vim.cmd("normal! <Esc>") -- Exit visual
+			vim.api.nvim_win_set_cursor(match.win, { match.to[1], match.to[2] - 1 })
+			vim.cmd("normal! y") -- Yank visual range
+			vim.cmd("normal! \\<Esc>")
 			state:restore()
 		end,
 	})
 end, { desc = "Yank Tree-sitter block with hints" })
 
--- Optional: Custom highlights for differentiation
-vim.api.nvim_set_hl(0, "FlashLabel", { fg = "#ff00ff", bold = true }) -- Magenta labels
--- Add rainbow for visual types if desired, e.g., in yt: rainbow = { enabled = true, shade = 5 }
+-- Optional: Highlights
+vim.api.nvim_set_hl(0, "FlashLabel", { fg = "#ff00ff", bold = true })
