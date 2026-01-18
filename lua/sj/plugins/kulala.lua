@@ -1,14 +1,19 @@
+vim.filetype.add({
+	extension = {
+		["http"] = "http",
+	},
+})
+
 return {
 	"mistweaverco/kulala.nvim",
-	keys = {
-		{ "<leader>Rs", desc = "Send request" },
-		{ "<leader>Ra", desc = "Send all requests" },
-		{ "<leader>Rb", desc = "Open scratchpad" },
-	},
 	ft = { "http", "rest" },
 	opts = {
 		global_keymaps = false,
-		global_keymaps_prefix = "<leader>R",
-		kulala_keymaps_prefix = "",
 	},
+	config = function()
+		vim.keymap.set("n", "<leader>Rs", "<cmd>KulalaSend<CR>", { desc = "Send request" })
+		vim.keymap.set("n", "<leader>Ra", "<cmd>KulalaSendAll<CR>", { desc = "Send all requests" })
+		vim.keymap.set("n", "<leader>Rb", "<cmd>KulalaScratchpad<CR>", { desc = "Kulala scratchpad" })
+		vim.keymap.set("n", "<leader>Re", "<cmd>KulalaSelectEnv<CR>", { desc = "Select Kulala env" })
+	end,
 }
