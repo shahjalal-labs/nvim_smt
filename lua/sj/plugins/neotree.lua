@@ -8,7 +8,7 @@ return {
 		-- some issues for me, when renaming files or directories sometimes they
 		-- didn't update so had to be using oil.nvim
 		-- enabled = true,
-		enabled = false,
+		enabled = true,
 		lazy = "very",
 		event = "VeryLazy",
 		keys = {
