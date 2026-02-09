@@ -269,18 +269,18 @@ local function openSiblingHurl()
 	local current_dir = vim.fn.fnamemodify(current_file, ":h") -- directory of current file
 
 	-- Look for *.hurl files in the same directory
-	local hurl_files = vim.fn.globpath(current_dir, "*.hurl", false, true)
+	local hurl_files = vim.fn.globpath(current_dir, "*.http", false, true)
 
 	if #hurl_files > 0 then
 		-- Open the first found .hurl file
 		vim.cmd("edit " .. hurl_files[1])
 	else
-		vim.notify("No .hurl file found in " .. current_dir, vim.log.levels.WARN)
+		vim.notify("No .http file found in " .. current_dir, vim.log.levels.WARN)
 	end
 end
 
 -- Map it to <leader>nh
-vim.keymap.set("n", "<leader>nh", openSiblingHurl, { desc = "Open sibling .hurl file" })
+vim.keymap.set("n", "<leader>nh", openSiblingHurl, { desc = "Open sibling .http file" })
 -- w: ╰───────────── Block End ─────────────╯
 --
 -- w: ╭──────────── Block Start ────────────╮

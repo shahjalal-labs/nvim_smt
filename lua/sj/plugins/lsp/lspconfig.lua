@@ -79,6 +79,19 @@ return {
 					capabilities = capabilities,
 				})
 			end,
+			-- Add this new block for TypeScript
+			["ts_ls"] = function()
+				lspconfig.ts_ls.setup({
+					capabilities = capabilities,
+					settings = {
+						typescript = {
+							preferences = {
+								importModuleSpecifier = "non-relative",
+							},
+						},
+					},
+				})
+			end,
 			["svelte"] = function()
 				lspconfig["svelte"].setup({
 					capabilities = capabilities,

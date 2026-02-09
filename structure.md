@@ -19,7 +19,9 @@
 │       │   │   │   └── prisma_model_navigation_prev.lua
 │       │   │   ├── CustomMode
 │       │   │   │   ├── init.lua
-│       │   │   │   └── ScrollMode.lua
+│       │   │   │   ├── ScrollMode.lua
+│       │   │   │   ├── surfingKesy.lua
+│       │   │   │   └── surfingKeys.lua
 │       │   │   ├── Git
 │       │   │   │   ├── autoPush2.lua
 │       │   │   │   ├── autoPush.lua
@@ -58,6 +60,7 @@
 │       │   │   │       └── typescript.lua
 │       │   │   ├── non_coding
 │       │   │   │   ├── init.lua
+│       │   │   │   ├── markdown_image_note.lua
 │       │   │   │   └── wordExplain.lua
 │       │   │   ├── normalModeInInrsert.lua
 │       │   │   ├── others.lua
@@ -96,7 +99,6 @@
 │           ├── auto-session.lua
 │           ├── blammer.lua
 │           ├── bufferline.lua
-│           ├── chatgpt.lua
 │           ├── colorful-winsep.lua
 │           ├── colorscheme.lua
 │           ├── comfy-line-numbers.lua
@@ -118,8 +120,10 @@
 │           ├── hl_match.lua
 │           ├── hop.lua
 │           ├── hurl.lua
+│           ├── image.lua
 │           ├── indent-blankline.lua
 │           ├── init.lua
+│           ├── kulala.lua
 │           ├── lazygit.lua
 │           ├── linting.lua
 │           ├── logsitter.lua
@@ -148,6 +152,7 @@
 │           ├── tiny_glimmer.lua
 │           ├── todo-comments.lua
 │           ├── treesitter.lua
+│           ├── treesitter-textobjects.lua
 │           ├── trouble.lua
 │           ├── twilight.lua
 │           ├── vim-maximizer.lua
@@ -160,6 +165,6 @@
 ├── README.md
 └── structure.md
 
-22 directories, 136 files
+22 directories, 141 files
 
 ```
