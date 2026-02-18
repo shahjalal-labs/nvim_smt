@@ -5,13 +5,23 @@
 -- For Tree-sitter: Assumes nvim-treesitter-textobjects installed for 'yit'; otherwise, use yap for paragraphs
 
 -- Custom yank word with hints
-vim.keymap.set({ "n", "x", "o" }, "<leader>yw", function()
+--[[ vim.keymap.set({ "n", "x", "o" }, "<leader>yw", function()
 	local hop = require("hop")
 	local old_pos = vim.api.nvim_win_get_cursor(0)
 	hop.hint_words({ multi_windows = false }) -- Hint all visible words in current window
 	vim.cmd('normal! "+yiw') -- Yank inner word to clipboard
 	vim.api.nvim_win_set_cursor(0, old_pos)
-end, { desc = "Yank word with Hop hints" })
+end, { desc = "Yank word with Hop hints" }) ]]
+
+vim.keymap.set({ "n", "x", "o" }, "<leader>yw", function()
+	local hop = require("hop")
+	local old_win = vim.api.nvim_get_current_win()
+	local old_pos = vim.api.nvim_win_get_cursor(old_win)
+	hop.hint_words({ multi_windows = true }) -- Hint all visible words across all windows
+	vim.cmd('normal! "+yiw') -- Yank inner word to clipboard
+	vim.api.nvim_set_current_win(old_win)
+	vim.api.nvim_win_set_cursor(old_win, old_pos)
+end, { desc = "Yank word with Hop hints (multi-window)" })
 
 -- Custom yank line with hints
 vim.keymap.set({ "n", "x", "o" }, "<leader>yl", function()

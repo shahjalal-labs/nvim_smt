@@ -80,11 +80,16 @@ return {
 				})
 			end,
 			-- Add this new block for TypeScript
-			["ts_ls"] = function()
-				lspconfig.ts_ls.setup({
+			["vtsls"] = function()
+				lspconfig.vtsls.setup({
 					capabilities = capabilities,
 					settings = {
 						typescript = {
+							preferences = {
+								importModuleSpecifier = "non-relative",
+							},
+						},
+						javascript = {
 							preferences = {
 								importModuleSpecifier = "non-relative",
 							},
