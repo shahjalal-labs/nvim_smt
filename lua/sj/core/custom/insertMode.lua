@@ -148,7 +148,7 @@ function RunNodemonInTmuxPane()
 	vim.wait(100)
 
 	-- Construct and send the nodemon command
-	local start_command = "tmux send-keys -t " .. pane_number .. ' "nodemon ' .. file_path .. '" C-m'
+	local start_command = "tmux send-keys -t " .. pane_number .. ' "bun tsx watch ' .. file_path .. '" C-m'
 	vim.fn.system(start_command)
 
 	-- Notify the user (optional)
