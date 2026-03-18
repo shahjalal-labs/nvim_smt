@@ -29,20 +29,6 @@ vim.keymap.set("n", "<leader>nR", function()
 end, { noremap = true, silent = true, desc = "Open routes index file" })
 --w: (end)  ╰────────────  go to /src/app/routes/index.ts ────────────╯
 
-vim.keymap.set("n", "<leader>nH", function()
-	-- Try both possible extensions
-	local routes_path_ts = vim.fn.getcwd() .. "/src/app/routes/index.ts"
-	local routes_path_js = vim.fn.getcwd() .. "/src/app/routes/index.js"
-
-	if vim.fn.filereadable(routes_path_ts) == 1 then
-		vim.cmd("edit " .. routes_path_ts)
-	elseif vim.fn.filereadable(routes_path_js) == 1 then
-		vim.cmd("edit " .. routes_path_js)
-	else
-		print("No src/app/routes/index.ts or .js file found in the current project.")
-	end
-end, { noremap = true, silent = true, desc = "Open routes index file" })
-
 --
 --w: ╭──────────── Block Start ────────────╮
 -- Open css file for react/nextJs projects
@@ -65,6 +51,31 @@ vim.keymap.set("n", "<leader>nc", function()
 	end
 end, { noremap = true, silent = true, desc = "Open css file for react/nextJs" })
 --w: ╰───────────── Block End ─────────────╯
+
+--w: (start)╭──────────── openHttpClientEnv ────────────╮
+local function openHttpClientEnv()
+	local util = require("lspconfig.util")
+
+	-- Detect project root
+	local root_dir = util.root_pattern("package.json", "README.md")(vim.fn.expand("%:p"))
+
+	if root_dir then
+		local env_path = root_dir .. "/http-client.env.json"
+
+		if vim.fn.filereadable(env_path) == 1 then
+			vim.cmd("edit " .. env_path)
+		else
+			vim.notify("http-client.env.json not found in project root.", vim.log.levels.WARN)
+		end
+	else
+		vim.notify("Project root not found.", vim.log.levels.ERROR)
+	end
+end
+
+vim.keymap.set("n", "<leader>nH", openHttpClientEnv, { desc = "Open http-client.env.json" })
+
+--w: (end)  ╰──────────── openHttpClientEnv ────────────╯
+
 --
 --
 --
