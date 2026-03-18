@@ -85,14 +85,14 @@ return {
 					capabilities = capabilities,
 					settings = {
 						typescript = {
-							preferences = {
+							--[[ preferences = {
 								importModuleSpecifier = "non-relative",
-							},
+							}, ]]
 						},
 						javascript = {
-							preferences = {
+							--[[ preferences = {
 								importModuleSpecifier = "non-relative",
-							},
+							}, ]]
 						},
 					},
 				})

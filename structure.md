@@ -148,7 +148,6 @@
 │           ├── tailwind.lua
 │           ├── tailwind-tools.lua
 │           ├── telescope.lua
-│           ├── time_tracker.lua
 │           ├── tiny_glimmer.lua
 │           ├── todo-comments.lua
 │           ├── treesitter.lua
@@ -165,6 +164,6 @@
 ├── README.md
 └── structure.md
 
-22 directories, 141 files
+22 directories, 140 files
 
 ```

@@ -7,6 +7,8 @@ require("sj.lazy")
 -- w: ╭──────────── Block Start ────────────╮
 -- tabline for showing foldername/fileRelativePath like this one ethanserbantes_backend/src/app/modules/Friends/friends.validation.ts
 
+vim.opt.shell = "/bin/bash" --p: in ubuntu, neovim not found npm, node. So fixed by chatgpt (perhaps working, not sure)
+
 vim.opt.showtabline = 2
 
 -- Custom tabline function
