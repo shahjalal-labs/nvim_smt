@@ -168,6 +168,7 @@ vim.keymap.set(
 --w: (start)╭────────────  Insert console.log ────────────╮
 --t: Insert console.log
 vim.api.nvim_set_keymap("i", "<space>ji", "console.log(``)<Esc>hi", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", "<space>jo", "logger.info(``)<Esc>hi", { noremap = true, silent = true })
 -- Normal mode mapping for 'space ji'
 vim.api.nvim_set_keymap("n", "<space>ji", "oconsole.log(``)<Esc>hi", { noremap = true, silent = true })
 

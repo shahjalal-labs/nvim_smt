@@ -240,11 +240,16 @@ vim.keymap.set("n", "<leader>nt", openTracker, { desc = "Open Tracker.md" })
 -- w: ╭──────────── Block Start ────────────╮
 -- Function to open src/server.ts in current working directory
 local function openServer()
-	local server_path = vim.fn.getcwd() .. "/src/server.ts"
+	local cwd = vim.fn.getcwd()
+	local server_path = cwd .. "/src/server.ts"
+	local index_path = cwd .. "/src/index.ts"
+
 	if vim.fn.filereadable(server_path) == 1 then
 		vim.cmd("edit " .. server_path)
+	elseif vim.fn.filereadable(index_path) == 1 then
+		vim.cmd("edit " .. index_path)
 	else
-		vim.notify("server.ts not found at " .. server_path, vim.log.levels.WARN)
+		vim.notify("Neither server.ts nor index.ts found in src/", vim.log.levels.WARN)
 	end
 end
 
@@ -689,5 +694,3 @@ end ]]
 -- vim.keymap.set("n", "<leader>ng", openSiblingRoute, { desc = "Open sibling route file" })
 
 -- w: ╰───────────── Block End ─────────────╯
-
-

@@ -57,7 +57,16 @@ function ConsoleLogVariable()
 	local variable = vim.fn.expand("<cword>")
 	local file = vim.fn.expand("%:t") -- Get the current file name
 	local line_number = vim.fn.line(".") + 1 -- Get the current line number and add 1
-	local log_statement = string.format("console.log(%s, '%s', %d);", variable, file, line_number)
+	local log_statement = string.format("console.log(%s);", variable, file, line_number)
+	vim.api.nvim_put({ log_statement }, "l", true, true)
+end
+
+-- logger.info(variable)
+vim.api.nvim_set_keymap("n", "<space>so", ":lua LoggerInfoVariable()<CR>", { noremap = true, silent = true })
+
+function LoggerInfoVariable()
+	local variable = vim.fn.expand("<cword>")
+	local log_statement = string.format("logger.info(%s);", variable)
 	vim.api.nvim_put({ log_statement }, "l", true, true)
 end
 
