@@ -1,59 +1,31 @@
--- Add to your surfingKesy.lua
--- No early require; lazy-load inside functions
+-- surfingKesy.lua using Hop.nvim for hint-based yanking
+-- Assumes Hop is installed and configured; loads lazily
+-- Yanks to system clipboard with "+; adjust if needed
+-- Restore cursor after yank for "remote" effect
+-- For Tree-sitter: Assumes nvim-treesitter-textobjects installed for 'yit'; otherwise, use yap for paragraphs
 
 -- Custom yank word with hints
+
 vim.keymap.set({ "n", "x", "o" }, "<leader>yw", function()
-	require("flash").jump({
-		pattern = "\\<\\w\\+\\>", -- Match words
-		search = { mode = "search", max_length = 0 }, -- Hint all matches
-		action = function(match, state)
-			vim.api.nvim_win_set_cursor(match.win, match.pos)
-			vim.cmd("normal! yiw") -- Yank inner word
-			state:restore() -- Return to original position
-		end,
-		jump = { pos = "start" }, -- Jump to start for yank
-	})
-end, { desc = "Yank word with hints" })
+	local hop = require("hop")
+	local old_win = vim.api.nvim_get_current_win()
+	local old_pos = vim.api.nvim_win_get_cursor(old_win)
+	hop.hint_words({ multi_windows = true }) -- Hint all visible words across all windows
+	vim.cmd('normal! "+yiw') -- Yank inner word to clipboard
+	vim.api.nvim_set_current_win(old_win)
+	vim.api.nvim_win_set_cursor(old_win, old_pos)
+end, { desc = "Yank word with Hop hints (multi-window)" })
 
 -- Custom yank line with hints
 vim.keymap.set({ "n", "x", "o" }, "<leader>yl", function()
-	require("flash").jump({
-		pattern = "^",
-		action = function(match, state)
-			vim.api.nvim_win_set_cursor(match.win, match.pos)
-			vim.cmd("normal! yy") -- Yank entire line
-			state:restore()
-		end,
-	})
-end, { desc = "Yank line with hints" })
+	local hop = require("hop")
+	local old_pos = vim.api.nvim_win_get_cursor(0)
+	hop.hint_lines({ multi_windows = false }) -- Hint all line starts
+	vim.cmd('normal! "+yy') -- Yank entire line to clipboard
+	vim.api.nvim_win_set_cursor(0, old_pos)
+end, { desc = "Yank line with Hop hints" })
 
--- Custom yank block/paragraph with hints (basic, non-Tree-sitter)
-vim.keymap.set({ "n", "x", "o" }, "<leader>yb", function()
-	require("flash").jump({
-		pattern = ".", -- General pattern to hint visible positions
-		search = { mode = "search" },
-		action = function(match, state)
-			vim.api.nvim_win_set_cursor(match.win, match.pos)
-			vim.cmd("normal! yap") -- Yank around paragraph/block
-			state:restore()
-		end,
-	})
-end, { desc = "Yank block with hints" })
-
--- Custom yank Tree-sitter block with hints
-vim.keymap.set({ "n", "x", "o" }, "<leader>yt", function()
-	require("flash").treesitter_search({
-		remote_op = { restore = true, motion = true },
-		action = function(match, state)
-			-- Yank the Tree-sitter node
-			vim.cmd("normal! yit") -- Yank inner Tree-sitter node (adjust 'it' as needed)
-			state:restore()
-		end,
-	})
-end, { desc = "Yank Tree-sitter block with hints" })
-
--- Optional: Customize label colors (add to your highlight setup or here)
-vim.api.nvim_set_hl(0, "FlashLabel", { fg = "#ff00ff", bold = true }) -- Base color
--- For type-specific colors, you can override in each jump config if needed, e.g.:
--- In yw: label = { rainbow = { enabled = true, shade = 1 } } for blue-ish
--- In yl: shade = 5 for green, etc.
+-- Optional: Customize Hop highlights for different types (add to your config)
+-- vim.api.nvim_set_hl(0, "HopNextKey", { fg = "#ff00ff", bold = true }) -- Example for labels
+-- To differentiate colors per mode: Temporarily set hl before hop call and restore after
+-- e.g., for yw: vim.api.nvim_set_hl(0, "HopNextKey", { fg = "blue" }); hop.hint_words(); ...; reset hl

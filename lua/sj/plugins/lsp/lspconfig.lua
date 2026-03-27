@@ -97,6 +97,14 @@ return {
 					},
 				})
 			end,
+
+			["prismals"] = function()
+				lspconfig.prismals.setup({
+					capabilities = capabilities,
+					filetypes = { "prisma" },
+				})
+			end,
+
 			["svelte"] = function()
 				lspconfig["svelte"].setup({
 					capabilities = capabilities,

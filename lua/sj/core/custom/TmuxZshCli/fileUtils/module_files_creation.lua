@@ -11,7 +11,7 @@ vim.keymap.set("n", "<leader>fg", function()
 	end
 
 	-- Normalize naming
-	local folder = clipboard:sub(1, 1):upper() .. clipboard:sub(2)
+	local folder = clipboard:sub(1, 1):lower() .. clipboard:sub(2)
 	local filebase = clipboard:sub(1, 1):lower() .. clipboard:sub(2)
 
 	-- Check which base directory exists
@@ -38,7 +38,7 @@ vim.keymap.set("n", "<leader>fg", function()
 		filebase .. ".service.ts",
 		filebase .. ".routes.ts",
 		filebase .. ".validation.ts",
-		filebase .. ".api.hurl",
+		filebase .. ".api.http",
 	}
 
 	-- Create files if missing
