@@ -6,7 +6,7 @@
 local function open_with_firefox_or_chrome(filepath)
 	local browser
 	if vim.fn.executable("firefox") == 1 then
-		browser = "firefox"
+		browser = "google-chrome" --firefox/google-chrome
 	elseif vim.fn.executable("google-chrome") == 1 then
 		browser = "google-chrome"
 	else
@@ -17,7 +17,7 @@ local function open_with_firefox_or_chrome(filepath)
 	print("🌐 Opened with " .. browser .. ": " .. filepath)
 end
 
-vim.keymap.set({ "n", "i" }, "<space>sa", function()
+vim.keymap.set({ "n", "i" }, "<space>fb", function()
 	local filepath = vim.fn.expand("%:p")
 	if filepath == "" then
 		print("❌ No file to open.")

@@ -71,7 +71,12 @@ end
 vim.api.nvim_create_user_command("OpenGitHubPages", open_github_pages, {})
 
 -- Map it to <leader>gu
-vim.keymap.set("n", "<leader>gu", open_github_pages, { noremap = true, silent = true })
+vim.keymap.set(
+	"n",
+	"<leader>gu",
+	open_github_pages,
+	{ noremap = true, desc = "Open github deployed url", silent = true }
+)
 
 -- Function to prompt for old_text/new_text in a single input, then run :%s/old_text/new_text/c
 local function interactive_replace()
