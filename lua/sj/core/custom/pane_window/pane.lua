@@ -1,6 +1,6 @@
 -- Neovim Smart Split Management with Lua
 
--- Create vertical split with leader pv
+-- Create vertical split with leader pv"+<Plug>(YankyPutAfter)
 vim.api.nvim_set_keymap("n", "<Leader>pv", ":vsplit<CR>", { noremap = true, silent = true })
 
 -- Create horizontal split with leader ph
