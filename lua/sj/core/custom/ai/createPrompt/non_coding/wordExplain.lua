@@ -86,7 +86,7 @@ vim.api.nvim_set_keymap(
 	"n",
 	"<leader>ww",
 	[[:lua require'sj.core.custom.non_coding.wordExplain'.create_word_file()<CR>]],
-	{ noremap = true, silent = true }
+	{ noremap = true, desc = "word study details prompt creation", silent = true }
 )
 
 return M
