@@ -1,3 +1,4 @@
+-- Save the current clipboard image to the same directory of the active file, using the same filename but with a .png extension. Then insert a link to that image into the current Markdown file.
 --w: (start)╭────────────  markdown image note ────────────╮
 vim.keymap.set("n", "<leader>mm", function()
 	-- Get current file path and directory
@@ -7,9 +8,8 @@ vim.keymap.set("n", "<leader>mm", function()
 		return
 	end
 
-	local dir = vim.fn.fnamemodify(file_path, ":h") -- folder path
-	local base = vim.fn.fnamemodify(file_path, ":t:r") -- filename without extension
-	local img_file = string.format("%s/%s.png", dir, base) -- full path for image
+	local dir = vim.fn.fnamemodify(file_path, ":h")
+	local base = vim.fn.fnamemodify(file_path, ":t:r")
 
 	-- Check if 'wl-paste' is installed
 	if vim.fn.executable("wl-paste") == 0 then
@@ -17,7 +17,28 @@ vim.keymap.set("n", "<leader>mm", function()
 		return
 	end
 
-	-- Save clipboard image (Wayland)
+	-- Generate unique filename
+	local index = 1
+	local img_file
+	local img_name
+
+	while true do
+		if index == 1 then
+			img_name = base
+		else
+			img_name = string.format("%s-%d", base, index)
+		end
+
+		img_file = string.format("%s/%s.png", dir, img_name)
+
+		if vim.fn.filereadable(img_file) == 0 then
+			break
+		end
+
+		index = index + 1
+	end
+
+	-- Save clipboard image
 	local save_cmd = string.format("wl-paste --type image/png > '%s'", img_file)
 	local result = os.execute(save_cmd)
 
@@ -26,11 +47,15 @@ vim.keymap.set("n", "<leader>mm", function()
 		return
 	end
 
-	-- Insert markdown link at cursor
-	local markdown_link = string.format("![%s](%s.png)", base, base)
-	vim.api.nvim_put({ markdown_link }, "l", true, true) -- linewise
+	-- Insert markdown link
+	local markdown_link = string.format("![%s](%s.png)", img_name, img_name)
+	vim.api.nvim_put({ markdown_link }, "l", true, true)
 
 	print("Saved clipboard image as " .. img_file)
 	print("Markdown link inserted: " .. markdown_link)
-end, { noremap = true, desc = "markdown image note from clipboard's png/jpg", silent = false })
+end, {
+	noremap = true,
+	desc = "Save clipboard image and insert markdown link",
+	silent = false,
+})
 --w: (end)  ╰────────────  markdown image note ────────────╯
