@@ -1,3 +1,6 @@
+-- take screenshot by slurp and automatic save into src/assets/screenshots/ss-09-00-04-AM_28-03-26.png  and  paste into markdown like ![Screenshot](src/assets/screenshots/ss-09-00-04-AM_28-03-26.png)
+
+--w: (start)╭────────────  take screenshot by slurp  ────────────╮
 vim.keymap.set("n", "<leader>sw", function()
 	local cwd = vim.fn.getcwd()
 	local screenshots_dir = cwd .. "/src/assets/screenshots"
@@ -36,3 +39,4 @@ vim.keymap.set("n", "<leader>sw", function()
 		print("❌ Screenshot failed")
 	end
 end, { desc = "Area select screenshot + append markdown to README.md" })
+--w: (end)  ╰────────────  take screenshot by slurp  ────────────╯

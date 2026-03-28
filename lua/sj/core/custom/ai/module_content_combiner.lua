@@ -1,4 +1,4 @@
---w: (start)╭────────────   ────────────╮
+--w: (start)╭────────────  copy all content of folder ────────────╮
 --p: copy all content for a folder to clipboard for llm context feeding
 vim.keymap.set("n", "<leader>g,", function()
 	local module_path = vim.fn.system("wl-paste"):gsub("%s+$", "")
@@ -167,4 +167,4 @@ vim.keymap.set("n", "<leader>g,", function()
 	vim.notify("✅ Generated: " .. output_file .. " and copied to clipboard! 🚀", vim.log.levels.INFO)
 end, { desc = "Generate full module content file and copy to clipboard" })
 
---w: (end)  ╰────────────   ────────────╯
+--w: (end)  ╰────────────  copy all content of folder ────────────╯

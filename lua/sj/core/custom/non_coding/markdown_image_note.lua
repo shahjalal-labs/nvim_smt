@@ -1,3 +1,4 @@
+--w: (start)╭────────────  markdown image note ────────────╮
 vim.keymap.set("n", "<leader>mm", function()
 	-- Get current file path and directory
 	local file_path = vim.api.nvim_buf_get_name(0)
@@ -31,4 +32,5 @@ vim.keymap.set("n", "<leader>mm", function()
 
 	print("Saved clipboard image as " .. img_file)
 	print("Markdown link inserted: " .. markdown_link)
-end, { noremap = true, silent = false })
+end, { noremap = true, desc = "markdown image note from clipboard's png/jpg", silent = false })
+--w: (end)  ╰────────────  markdown image note ────────────╯
