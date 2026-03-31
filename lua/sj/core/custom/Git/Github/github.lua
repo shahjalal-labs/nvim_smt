@@ -191,7 +191,7 @@ vim.api.nvim_set_keymap(
 	"n",
 	"<space>aj",
 	":lua GitPushFromNvimCommitPrompting()<CR>",
-	{ noremap = true, silent = true }
+	{ noremap = true, desc = "git push with commit msg from nvim", silent = true }
 )
 
 --w: (end)  ╰──────────── GitPushFromNvimCommitPrompting ────────────╯

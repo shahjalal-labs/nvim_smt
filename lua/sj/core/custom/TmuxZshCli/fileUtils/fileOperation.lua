@@ -1,6 +1,3 @@
---w: 1╭──────────── Block Start ────────────╮
---w: 1╰───────────── Block End ─────────────╯
-
 --w: 1╭──────────── Open current file in browser ────────────╮
 --p: Open current file in browser (firefox/chrome)
 local function open_with_firefox_or_chrome(filepath)
@@ -59,7 +56,12 @@ vim.keymap.set("n", "<leader>sr", yank_relative_path, {
 --
 --w: 3╭──────────── copy absolute file path ────────────╮
 --t:copy the absolute path of the current file in Neovim using space sj
-vim.api.nvim_set_keymap("n", "<space>sj", ":lua CopyAbsolutePath()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap(
+	"n",
+	"<space>sj",
+	":lua CopyAbsolutePath()<CR>",
+	{ noremap = true, desc = "copy current file absolute path", silent = true }
+)
 
 function CopyAbsolutePath()
 	local file_path = vim.fn.expand("%:p") -- Get the absolute path of the current file
