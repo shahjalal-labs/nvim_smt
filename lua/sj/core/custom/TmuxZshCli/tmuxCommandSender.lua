@@ -53,7 +53,6 @@ function SendCliCommandToTmuxPane()
 
 	vim.notify("Sent to Tmux Pane " .. pane_number .. ": " .. command, vim.log.levels.INFO)
 end
-
 -- Keybindings: Alt + d in Normal, Insert, and Visual modes
 vim.api.nvim_set_keymap("n", "<A-d>", ":lua SendCliCommandToTmuxPane()<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", "<A-d>", "<Esc>:lua SendCliCommandToTmuxPane()<CR>", { noremap = true, silent = true })

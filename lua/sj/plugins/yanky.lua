@@ -24,6 +24,9 @@ return {
 		vim.keymap.set({ "n", "x" }, "gP", "<Plug>(YankyGPutBefore)", { desc = "Yanky GPut Before" })
 		vim.keymap.set("n", "<c-p>", "<Plug>(YankyPreviousEntry)", { desc = "Yanky Previous Entry" })
 		vim.keymap.set("n", "<c-n>", "<Plug>(YankyNextEntry)", { desc = "Yanky Next Entry" })
+		-- Visual mode: prevent overwrite of yank
+		vim.keymap.set("x", "p", '"_dP', { desc = "Replace selection correctly" })
+		vim.keymap.set("x", "P", '"_dP', { desc = "Replace selection correctly" })
 	end,
 	vim.api.nvim_set_keymap(
 		"i",

@@ -1,8 +1,5 @@
--- ╭──────────── Block Start ────────────╮
-
--- ╰───────────── Block End ─────────────╯
-
 --t: Function to backup dotfiles and push to Git
+--w: (start)╭──────────── backup_and_git_push ────────────╮
 function backup_and_git_push()
 	local backup_dir = "/mnt/fed/allDotfilesBackup"
 
@@ -33,6 +30,8 @@ function backup_and_git_push()
 end
 
 vim.api.nvim_set_keymap("n", "<leader>ab", ":lua backup_and_git_push()<CR>", { noremap = true, silent = true })
+--w: (end)  ╰──────────── backup_and_git_push ────────────╯
+
 --
 --
 --
@@ -41,6 +40,7 @@ vim.api.nvim_set_keymap("n", "<leader>ab", ":lua backup_and_git_push()<CR>", { n
 --
 --
 --t: Function to open the current project root in VS Code
+--w: (start)╭──────────── open_project_in_vscode ────────────╮
 function open_project_in_vscode()
 	-- Get the current project root directory
 	local project_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
@@ -55,7 +55,10 @@ function open_project_in_vscode()
 	vim.fn.system("code " .. project_root)
 	print("Opening project in VS Code: " .. project_root)
 end
+
 vim.api.nvim_set_keymap("n", "<leader>av", ":lua open_project_in_vscode()<CR>", { noremap = true, silent = true })
+
+--w: (end)  ╰──────────── open_project_in_vscode ────────────╯
 --
 --
 --
